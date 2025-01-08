@@ -1,14 +1,16 @@
 import './DatasetsControl.css';
+import { useState } from 'react';
 
 import { Feature } from 'geojson';
 
-import { Dataset, Datasets } from './MyMap';
+import { Dataset, Datasets, Result } from './MyMap';
 
 type DatasetsControlProps = {
   aoi: Feature;
   datasets: Datasets;
   selected3DEP: Dataset | null;
   setSelected3DEP: React.Dispatch<React.SetStateAction<Dataset | null>>;
+  setResult: React.Dispatch<React.SetStateAction<Result | null>>;
 };
 
 export default function DatasetsControl({
@@ -16,9 +18,13 @@ export default function DatasetsControl({
   datasets,
   selected3DEP,
   setSelected3DEP,
+  setResult,
 }: DatasetsControlProps) {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const handleSubmit = async () => {
     try {
+      setIsSubmitting(true);
       const payload = {
         aoi: aoi,
         dataset: selected3DEP,
@@ -29,9 +35,11 @@ export default function DatasetsControl({
         body: JSON.stringify(payload),
       });
       const result = await response.json();
-      console.log(result);
+      setResult(result);
+      setIsSubmitting(false);
     } catch (err) {
       console.error('Error:', err);
+      setIsSubmitting(false);
     }
   };
 
@@ -73,7 +81,9 @@ export default function DatasetsControl({
             ))}
           </select> */}
         </fieldset>
-        <button type="submit">Run model</button>
+        <button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? 'Running model...' : 'Run model'}
+        </button>
       </form>
     </div>
   );

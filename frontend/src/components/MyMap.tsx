@@ -20,9 +20,16 @@ export type Datasets = {
   raster: Dataset[];
 };
 
+export type Result = {
+  href: string;
+  rescale: string;
+  session_id: string;
+};
+
 export default function MyMap() {
   const [aoi, setAoi] = useState<Feature | null>(null);
   const [datasets, setDatasets] = useState<Datasets | null>(null);
+  const [result, setResult] = useState<Result | null>(null);
   const [selected3dep, setSelected3dep] = useState<Dataset | null>(null);
 
   const mapRef = useRef<MapRef | null>(null);
@@ -62,6 +69,8 @@ export default function MyMap() {
     ],
   });
 
+  console.log(result);
+
   return (
     <Map
       ref={mapRef}
@@ -79,9 +88,10 @@ export default function MyMap() {
           datasets={datasets}
           selected3DEP={selected3dep}
           setSelected3DEP={setSelected3dep}
+          setResult={setResult}
         />
       )}
-      {selected3dep && (
+      {selected3dep && !result && (
         <Source
           id="bbox-source"
           type="geojson"
@@ -100,6 +110,20 @@ export default function MyMap() {
               'line-width': 2,
             }}
           />
+        </Source>
+      )}
+      {result && (
+        <Source
+          id="result-source"
+          type="raster"
+          tiles={[
+            `/cog/tiles/WebMercatorQuad/{z}/{x}/{y}@2x?url=${result.href}&rescale=${result.rescale}`,
+          ]}
+          maxzoom={24}
+          minzoom={0}
+          tileSize={512}
+        >
+          <Layer id="result-layer" type="raster" source={result.session_id} />
         </Source>
       )}
       <DrawToolbar setAoi={setAoi} setDatasets={setDatasets} />

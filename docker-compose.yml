@@ -24,9 +24,39 @@ services:
       - 5000:5000
     volumes:
       - ./backend:/app
+      - user-data:/static
     restart: always
     env_file:
       - .backend.env
+
+  titiler:
+    image: ghcr.io/developmentseed/titiler:0.19.0
+    volumes:
+      - user-data:/static
+    environment:
+      # Application
+      - HOST=0.0.0.0
+      - PORT=8888
+      # Gunicorn / Uvicorn
+      # https://github.com/tiangolo/uvicorn-gunicorn-docker#web_concurrency
+      # - WEB_CONCURRENCY=1
+      - ACCESS_LOG=/var/log/titiler-access.log
+      - ERROR_LOG=/var/log/titiler-error.log
+      # https://github.com/tiangolo/uvicorn-gunicorn-docker#workers_per_core
+      - WORKERS_PER_CORE=1
+      # GDAL config
+      - CPL_TMPDIR=/tmp
+      - GDAL_CACHEMAX=75%
+      - GDAL_INGESTED_BYTES_AT_OPEN=32768
+      - GDAL_DISABLE_READDIR_ON_OPEN=EMPTY_DIR
+      - GDAL_HTTP_MERGE_CONSECUTIVE_RANGES=YES
+      - GDAL_HTTP_MULTIPLEX=YES
+      - GDAL_HTTP_VERSION=2
+      - PYTHONWARNINGS=ignore
+      - VSI_CACHE=TRUE
+      - VSI_CACHE_SIZE=536870912
+      - CPL_VSIL_CURL_ALLOWED_EXTENSIONS=.tif,.TIF,.tiff
+      - CPL_VSIL_CURL_CACHE_SIZE=200000000
 
   proxy:
     build: 
@@ -36,8 +66,11 @@ services:
     tmpfs:
       - /tmp
     ports:
-      - "0.0.0.0:8888:80"
+      - "0.0.0.0:8001:80"
     restart: always
     depends_on:
       - frontend
       - backend
+
+volumes:
+  user-data:

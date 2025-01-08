@@ -17,4 +17,5 @@ class DatasetsResponse(BaseModel):
 
 class ModelResponse(BaseModel):
     href: AnyHttpUrl
+    rescale: str
     session_id: str

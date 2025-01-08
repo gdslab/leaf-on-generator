@@ -3,6 +3,7 @@ import uuid
 from typing import Any, Dict, List, Union
 
 import numpy as np
+import rasterio
 from fastapi import FastAPI, HTTPException, Request, status
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -126,8 +127,19 @@ def run_3dep_model(aoi: Feature[Polygon, Dict], dataset: DatasetItem) -> ModelRe
         bounding_box, session_dir, ept_id, ept_url, ept_epsg, model_path
     )
 
+    with rasterio.open(chm_path) as src:
+        band1 = src.read(1)
+        min_value = band1.min()
+        max_value = band1.max()
+
     # Create response with URL for CHM and session ID
-    response = JSONResponse(content={"href": chm_path, "session_id": session_id})
+    response = JSONResponse(
+        content={
+            "href": chm_path,
+            "rescale": f"{min_value},{max_value}",
+            "session_id": session_id,
+        }
+    )
     response.set_cookie(key="session_id", value=session_id, httponly=True)
 
     return response
