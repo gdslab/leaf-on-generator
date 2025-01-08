@@ -1,0 +1,43 @@
+services:
+  frontend:
+    build:
+      context: './frontend'
+      dockerfile: frontend.dockerfile
+    platform: linux/x86_64
+    command: yarn run dev --host 0.0.0.0 --port 8000
+    ports:
+      - 8000:8000
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    restart: always
+
+  backend:
+    build:
+      context: './backend'
+      dockerfile: backend.dockerfile
+      args:
+        INSTALL_DEV: true
+        NUM_OF_WORKERS: 4
+    platform: linux/x86_64
+    ports: 
+      - 5000:5000
+    volumes:
+      - ./backend:/app
+    restart: always
+    env_file:
+      - .backend.env
+
+  proxy:
+    build: 
+      context: ./proxy
+      dockerfile: proxy.dockerfile
+    platform: linux/x86_64
+    tmpfs:
+      - /tmp
+    ports:
+      - "0.0.0.0:8888:80"
+    restart: always
+    depends_on:
+      - frontend
+      - backend

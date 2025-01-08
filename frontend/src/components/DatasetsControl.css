@@ -1,0 +1,22 @@
+.control {
+    position: absolute;
+    color: #000000;
+    background-color: #ffffff;
+    border: 2px solid #000000;
+    border-radius: 15px;
+    top: 88px;
+    left: 8px;
+    height: auto;
+    width: auto;
+    padding: 15px;
+}
+
+.control > form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.control > form > button {
+    background-color: green;
+}
