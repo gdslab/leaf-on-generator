@@ -156,11 +156,11 @@ def process_dtm_dsm(boundary_coordinates, session_dir, ept_id, ept_url, ept_epsg
 
 
 # ====================
-# 2. NDHM 생성 및 Pix2Pix 모델 실행
+# 2. NDHM generation and Pix2Pix model execution
 # ====================
 def process_ndhm_and_model(dtm, dsm, session_dir, model_path):
     """
-    NDHM 생성 및 Pix2Pix 모델 적용
+    NDHM generation and Pix2Pix model application
     """
     ndhm_output = os.path.join(session_dir, "output_ndhm.tif")
     patch_folder = os.path.join(session_dir, "patches")
@@ -168,18 +168,21 @@ def process_ndhm_and_model(dtm, dsm, session_dir, model_path):
     merged_output = os.path.join(session_dir, "merged_gen_chm.tif")
     updated_output = os.path.join(session_dir, "updated_gen_patches")
 
+    # NDHM generate
     generate_ndhm(dsm, dtm, ndhm_output)
     save_patches(ndhm_output, patch_folder, patch_size=256)
+
+    # Pix2Pix model application
     model = load_trained_pix2pix_model(model_path)
     generate_and_save_pix2pix_images(model, patch_folder, output_model)
     update_coordinate_system(patch_folder, output_model, updated_output)
     merge_patches(updated_output, merged_output)
 
-    return merged_output
+    return ndhm_output, merged_output
 
 
 # ====================
-# 3. 메인 실행 함수
+# 3. main execution
 # ====================
 def your_main_model_function(
     boundary_coordinates, session_dir, ept_id, ept_url, ept_epsg, model_path
@@ -187,6 +190,11 @@ def your_main_model_function(
     dtm, dsm = process_dtm_dsm(
         boundary_coordinates, session_dir, ept_id, ept_url, ept_epsg
     )
-    final_output = process_ndhm_and_model(dtm, dsm, session_dir, model_path)
+    ndhm_output, final_output = process_ndhm_and_model(
+        dtm, dsm, session_dir, model_path
+    )
+
+    print(f"✅ NDHM: {ndhm_output}")
     print(f"✅ Final Leaf-on CHM: {final_output}")
-    return final_output
+
+    return ndhm_output, final_output

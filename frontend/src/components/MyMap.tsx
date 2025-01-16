@@ -5,6 +5,7 @@ import Map, { Layer, MapRef, Source } from 'react-map-gl/maplibre';
 
 import DatasetsControl from './DatasetsControl';
 import DrawToolbar from './DrawToolbar';
+import ViewMode from './ViewMode';
 
 import { mapboxSatelliteBasemapStyle } from './basemapStyles';
 
@@ -21,8 +22,14 @@ export type Datasets = {
 };
 
 export type Result = {
-  href: string;
-  rescale: string;
+  chm: {
+    href: string;
+    rescale: string;
+  };
+  ndhm: {
+    href: string;
+    rescale: string;
+  };
   session_id: string;
 };
 
@@ -31,6 +38,7 @@ export default function MyMap() {
   const [datasets, setDatasets] = useState<Datasets | null>(null);
   const [result, setResult] = useState<Result | null>(null);
   const [selected3dep, setSelected3dep] = useState<Dataset | null>(null);
+  const [viewMode, setViewMode] = useState<'chm' | 'ndhm'>('chm');
 
   const mapRef = useRef<MapRef | null>(null);
 
@@ -68,8 +76,6 @@ export default function MyMap() {
       },
     ],
   });
-
-  console.log(result);
 
   return (
     <Map
@@ -114,19 +120,21 @@ export default function MyMap() {
       )}
       {result && (
         <Source
-          id="result-source"
+          key={viewMode}
+          id={`${viewMode}-source`}
           type="raster"
           tiles={[
-            `/cog/tiles/WebMercatorQuad/{z}/{x}/{y}@2x?url=${result.href}&rescale=${result.rescale}`,
+            `/cog/tiles/WebMercatorQuad/{z}/{x}/{y}@2x?url=${result[viewMode].href}&rescale=${result[viewMode].rescale}`,
           ]}
           maxzoom={24}
           minzoom={0}
           tileSize={512}
         >
-          <Layer id="result-layer" type="raster" source={result.session_id} />
+          <Layer id={`${viewMode}-layer`} type="raster" source={result.session_id} />
         </Source>
       )}
       <DrawToolbar setAoi={setAoi} setDatasets={setDatasets} />
+      {result && <ViewMode setViewMode={setViewMode} viewMode={viewMode} />}
     </Map>
   );
 }

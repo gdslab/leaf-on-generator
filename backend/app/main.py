@@ -123,20 +123,33 @@ def run_3dep_model(aoi: Feature[Polygon, Dict], dataset: DatasetItem) -> ModelRe
     model_path = os.path.join("/app", "app", "leaf_on_generator", "test_oct2_.h5")
 
     # Run model here
-    chm_path = your_main_model_function(
+    ndhm_path, chm_path = your_main_model_function(
         bounding_box, session_dir, ept_id, ept_url, ept_epsg, model_path
     )
 
+    # Get rescale values for chm
     with rasterio.open(chm_path) as src:
         band1 = src.read(1)
-        min_value = band1.min()
-        max_value = band1.max()
+        chm_min_value = band1.min()
+        chm_max_value = band1.max()
+
+    # Get rescale values for ndhm
+    with rasterio.open(ndhm_path) as src:
+        band1 = src.read(1)
+        ndhm_min_value = band1.min()
+        ndhm_max_value = band1.max()
 
     # Create response with URL for CHM and session ID
     response = JSONResponse(
         content={
-            "href": chm_path,
-            "rescale": f"{min_value},{max_value}",
+            "chm": {
+                "href": chm_path,
+                "rescale": f"{chm_min_value},{chm_max_value}",
+            },
+            "ndhm": {
+                "href": ndhm_path,
+                "rescale": f"{ndhm_min_value},{ndhm_max_value}",
+            },
             "session_id": session_id,
         }
     )

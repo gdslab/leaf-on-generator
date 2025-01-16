@@ -15,7 +15,12 @@ class DatasetsResponse(BaseModel):
     raster: List[DatasetItem]
 
 
-class ModelResponse(BaseModel):
+class ResultDataset(BaseModel):
     href: AnyHttpUrl
     rescale: str
+
+
+class ModelResponse(BaseModel):
+    chm: ResultDataset
+    ndhm: ResultDataset
     session_id: str
