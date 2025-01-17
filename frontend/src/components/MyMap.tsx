@@ -2,10 +2,10 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import { Feature, FeatureCollection } from 'geojson';
 import { useEffect, useRef, useState } from 'react';
 import Map, { Layer, MapRef, Source } from 'react-map-gl/maplibre';
+import * as turf from '@turf/turf';
 
 import DatasetsControl from './DatasetsControl';
 import DrawToolbar from './DrawToolbar';
-import ViewMode from './ViewMode';
 
 import { mapboxSatelliteBasemapStyle } from './basemapStyles';
 
@@ -21,6 +21,12 @@ export type Datasets = {
   raster: Dataset[];
 };
 
+export interface FeatureWithId extends Feature {
+  id: string;
+}
+
+export type Model = 'lidar' | 'both';
+
 export type Result = {
   chm: {
     href: string;
@@ -34,11 +40,16 @@ export type Result = {
 };
 
 export default function MyMap() {
-  const [aoi, setAoi] = useState<Feature | null>(null);
+  const [aoi, setAoi] = useState<FeatureWithId | null>(null);
   const [datasets, setDatasets] = useState<Datasets | null>(null);
   const [result, setResult] = useState<Result | null>(null);
   const [selected3dep, setSelected3dep] = useState<Dataset | null>(null);
+  const [selectedModel, setSelectedModel] = useState<Model>('lidar');
+  const [selectedNaip, setSelectedNaip] = useState<Dataset | null>(null);
   const [viewMode, setViewMode] = useState<'chm' | 'ndhm'>('chm');
+  const [datasetsIntersection, setDatasetsIntersection] = useState<Feature | null>(
+    null
+  );
 
   const mapRef = useRef<MapRef | null>(null);
 
@@ -52,6 +63,20 @@ export default function MyMap() {
       });
     }
   }, [selected3dep]);
+
+  useEffect(() => {
+    if (mapRef.current && aoi && result) {
+      const map = mapRef.current.getMap();
+      const bbox = turf.bbox(aoi);
+
+      if (bbox.length === 4) {
+        map.fitBounds(bbox, {
+          padding: 20,
+          duration: 1000,
+        });
+      }
+    }
+  }, [result]);
 
   const getBboxGeojson = (
     bbox: [number, number, number, number]
@@ -77,6 +102,15 @@ export default function MyMap() {
     ],
   });
 
+  useEffect(() => {
+    if (selected3dep && selectedNaip) {
+      const polygon1 = turf.bboxPolygon(selected3dep.bbox);
+      const polygon2 = turf.bboxPolygon(selectedNaip.bbox);
+      const intersection = turf.intersect(turf.featureCollection([polygon1, polygon2]));
+      setDatasetsIntersection(intersection);
+    }
+  }, [selected3dep, selectedNaip]);
+
   return (
     <Map
       ref={mapRef}
@@ -92,24 +126,32 @@ export default function MyMap() {
         <DatasetsControl
           aoi={aoi}
           datasets={datasets}
+          result={result}
+          setDatasets={setDatasets}
           selected3DEP={selected3dep}
+          selectedModel={selectedModel}
+          selectedNaip={selectedNaip}
           setSelected3DEP={setSelected3dep}
+          setSelectedModel={setSelectedModel}
+          setSelectedNaip={setSelectedNaip}
           setResult={setResult}
+          setViewMode={setViewMode}
+          viewMode={viewMode}
         />
       )}
-      {selected3dep && !result && (
+      {selected3dep && !datasetsIntersection && !result && (
         <Source
-          id="bbox-source"
+          id="bbox-3dep-source"
           type="geojson"
           data={getBboxGeojson(selected3dep.bbox)}
         >
           <Layer
-            id="bbox-layer"
+            id="bbox-3dep-layer"
             type="fill"
             paint={{ 'fill-color': '#888888', 'fill-opacity': 0.5 }}
           />
           <Layer
-            id="bbox-border"
+            id="bbox-3dep-border"
             type="line"
             paint={{
               'line-color': '#000000',
@@ -118,13 +160,56 @@ export default function MyMap() {
           />
         </Source>
       )}
-      {result && (
+      {selectedNaip && !datasetsIntersection && !result && (
+        <Source
+          id="bbox-naip-source"
+          type="geojson"
+          data={getBboxGeojson(selectedNaip.bbox)}
+        >
+          <Layer
+            id="bbox-naip-layer"
+            type="fill"
+            paint={{ 'fill-color': '#a3e635', 'fill-opacity': 0.5 }}
+          />
+          <Layer
+            id="bbox-naip-border"
+            type="line"
+            paint={{
+              'line-color': '#000000',
+              'line-width': 2,
+            }}
+          />
+        </Source>
+      )}
+      {selected3dep && selectedNaip && datasetsIntersection && !result && (
+        <Source
+          id="bbox-intersection-source"
+          type="geojson"
+          data={datasetsIntersection}
+        >
+          <Layer
+            id="bbox-intersection-layer"
+            type="fill"
+            paint={{ 'fill-color': '#a855f7', 'fill-opacity': 0.5 }}
+          />
+          <Layer
+            id="bbox-intersection-border"
+            type="line"
+            paint={{
+              'line-color': '#fde047',
+              'line-width': 2,
+              'line-dasharray': [4, 2],
+            }}
+          />
+        </Source>
+      )}
+      {result && result?.[viewMode] && (
         <Source
           key={viewMode}
           id={`${viewMode}-source`}
           type="raster"
           tiles={[
-            `/cog/tiles/WebMercatorQuad/{z}/{x}/{y}@2x?url=${result[viewMode].href}&rescale=${result[viewMode].rescale}`,
+            `/cog/tiles/WebMercatorQuad/{z}/{x}/{y}@2x?url=${result[viewMode].href}&rescale=0.0,60.0&colormap_name=jet`,
           ]}
           maxzoom={24}
           minzoom={0}
@@ -133,8 +218,12 @@ export default function MyMap() {
           <Layer id={`${viewMode}-layer`} type="raster" source={result.session_id} />
         </Source>
       )}
-      <DrawToolbar setAoi={setAoi} setDatasets={setDatasets} />
-      {result && <ViewMode setViewMode={setViewMode} viewMode={viewMode} />}
+      <DrawToolbar
+        aoi={aoi}
+        result={result}
+        setAoi={setAoi}
+        setDatasets={setDatasets}
+      />
     </Map>
   );
 }

@@ -1,6 +1,6 @@
 import os
 import uuid
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Optional, Union
 
 import numpy as np
 import rasterio
@@ -13,7 +13,12 @@ from pystac_client import Client
 from starlette.middleware.sessions import SessionMiddleware
 
 from app.leaf_on_generator.main4api import your_main_model_function
-from app.schemas.datasets import DatasetItem, DatasetsResponse, ModelResponse
+from app.schemas.datasets import (
+    DatasetsResponse,
+    LidarDatasetItem,
+    ModelResponse,
+    NaipDatasetItem,
+)
 from app.utils import generate_secret_key
 
 app = FastAPI(title="Leaf-on Generator")
@@ -82,6 +87,7 @@ def find_datasets_in_aoi(aoi: Feature[Polygon, Dict]) -> DatasetsResponse:
                 "href": item.assets["image"].href,
                 "bbox": item.bbox,
                 "epsg": item.properties.get("proj:epsg"),
+                "gsd": item.properties.get("gsd"),
             }
             for item in search_naip.items()
         ],
@@ -91,7 +97,12 @@ def find_datasets_in_aoi(aoi: Feature[Polygon, Dict]) -> DatasetsResponse:
 
 
 @app.post("/api/model")
-def run_3dep_model(aoi: Feature[Polygon, Dict], dataset: DatasetItem) -> ModelResponse:
+def run_3dep_model(
+    aoi: Feature[Polygon, Dict],
+    lidar: LidarDatasetItem,
+    model: str = "lidar",
+    naip: Optional[NaipDatasetItem] = None,
+) -> ModelResponse:
     # Create session ID
     session_id = str(uuid.uuid4())
 
@@ -116,16 +127,43 @@ def run_3dep_model(aoi: Feature[Polygon, Dict], dataset: DatasetItem) -> ModelRe
         boundary_arr[:, 1].max(),
     ]
     # Get EPT ID, URL, and EPSG
-    ept_id = dataset.id
-    ept_url = str(dataset.href)
-    ept_epsg = dataset.epsg
+    ept_id = lidar.id
+    ept_url = str(lidar.href)
+    ept_epsg = lidar.epsg
+
+    # Get NAIP properties if Lidar + Spectral selected
+    if model == "both" and naip:
+        naip_id = naip.id
+        naip_url = naip.url
+        naip_epsg = naip.epsg
+        naip_gsd = naip.gsd
 
     model_path = os.path.join("/app", "app", "leaf_on_generator", "test_oct2_.h5")
 
     # Run model here
-    ndhm_path, chm_path = your_main_model_function(
-        bounding_box, session_dir, ept_id, ept_url, ept_epsg, model_path
-    )
+    if model == "lidar":
+        ndhm_path, chm_path = your_main_model_function(
+            bounding_box, session_dir, ept_id, ept_url, ept_epsg, model_path
+        )
+    elif model == "both":
+        pass
+        # ndhm_path, chm_path, naip_path = your_main_model_function2(
+        #     bounding_box,
+        #     session_dir,
+        #     ept_id,
+        #     ept_url,
+        #     ept_epsg,
+        #     naip_id,
+        #     naip_url,
+        #     naip_epsg,
+        #     naip_gsd,
+        #     model_path,
+        # )
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Selected model must be 'lidar' or 'both'",
+        )
 
     # Get rescale values for chm
     with rasterio.open(chm_path) as src:
