@@ -8,8 +8,8 @@ export default function ViewMode({
   viewMode,
 }: {
   result: Result | null;
-  setViewMode: React.Dispatch<React.SetStateAction<'chm' | 'ndhm'>>;
-  viewMode: 'chm' | 'ndhm';
+  setViewMode: React.Dispatch<React.SetStateAction<'chm' | 'ndhm' | 'naip'>>;
+  viewMode: 'chm' | 'ndhm' | 'naip';
 }) {
   if (!result || !result?.chm || !result?.ndhm) return;
 
@@ -21,10 +21,13 @@ export default function ViewMode({
         <select
           name="viewMode"
           value={viewMode}
-          onChange={(e) => setViewMode(e.target.value as 'chm' | 'ndhm')}
+          onChange={(e) =>
+            setViewMode(e.target.value as 'chm' | 'ndhm' | 'naip')
+          }
         >
           <option value="chm">CHM</option>
           <option value="ndhm">NDHM</option>
+          {result.naip && <option value="naip">NAIP</option>}
         </select>
         <h3>Download</h3>
         <div
@@ -49,6 +52,16 @@ export default function ViewMode({
           >
             NDHM (GeoTIFF)
           </a>
+          {result.naip && (
+            <a
+              href={result.naip.href}
+              download="naip.tif"
+              aria-label="Download NAIP file"
+              type="image/tiff"
+            >
+              NAIP (GeoTIFF)
+            </a>
+          )}
         </div>
       </fieldset>
     </div>

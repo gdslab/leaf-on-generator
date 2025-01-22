@@ -181,9 +181,20 @@ def run_3dep_model(
 
     # Prepare naip payload if available
     if model == "both" and naip_path:
+        with rasterio.open(naip_path) as src:
+            band1 = src.read(1)
+            band2 = src.read(2)
+            band3 = src.read(3)
+            band1_min_value = band1.min()
+            band1_max_value = band1.max()
+            band2_min_value = band2.min()
+            band2_max_value = band2.max()
+            band3_min_value = band3.min()
+            band3_max_value = band3.max()
+
         naip_payload = {
             "href": naip_path,
-            "rescale": f"{chm_min_value},{chm_max_value}",
+            "rescale": f"bidx=1&bidx=2&bidx=3&rescale={band1_min_value},{band1_max_value}&rescale={band2_min_value},{band2_max_value}&rescale={band3_min_value},{band3_max_value}",
         }
     else:
         naip_payload = None
@@ -192,11 +203,11 @@ def run_3dep_model(
     payload = ModelResponse(
         chm={
             "href": chm_path,
-            "rescale": f"{chm_min_value},{chm_max_value}",
+            "rescale": f"rescale={chm_min_value},{chm_max_value}",
         },
         ndhm={
             "href": ndhm_path,
-            "rescale": f"{chm_min_value},{chm_max_value}",
+            "rescale": f"rescale={chm_min_value},{chm_max_value}",
         },
         naip=naip_payload,
         session_id=session_id,

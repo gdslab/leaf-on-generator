@@ -17,8 +17,8 @@ type DatasetsControlProps = {
   setSelectedModel: React.Dispatch<React.SetStateAction<Model>>;
   setSelectedNaip: React.Dispatch<React.SetStateAction<Dataset | null>>;
   setResult: React.Dispatch<React.SetStateAction<Result | null>>;
-  viewMode: 'chm' | 'ndhm';
-  setViewMode: React.Dispatch<React.SetStateAction<'ndhm' | 'chm'>>;
+  viewMode: 'chm' | 'ndhm' | 'naip';
+  setViewMode: React.Dispatch<React.SetStateAction<'ndhm' | 'chm' | 'naip'>>;
 };
 
 export default function DatasetsControl({
@@ -147,10 +147,16 @@ export default function DatasetsControl({
         </button>
       </form>
       {result && result?.[viewMode] && (
-        <ViewMode result={result} viewMode={viewMode} setViewMode={setViewMode} />
+        <ViewMode
+          result={result}
+          viewMode={viewMode}
+          setViewMode={setViewMode}
+        />
       )}
       {result && (
-        <div style={{ display: 'flex', flexDirection: 'column', marginTop: 15 }}>
+        <div
+          style={{ display: 'flex', flexDirection: 'column', marginTop: 15 }}
+        >
           <button
             className="reset-button"
             type="submit"

@@ -37,6 +37,10 @@ export type Result = {
     href: string;
     rescale: string;
   };
+  naip?: {
+    href: string;
+    rescale: string;
+  };
   session_id: string;
 };
 
@@ -47,7 +51,7 @@ export default function MyMap() {
   const [selected3dep, setSelected3dep] = useState<Dataset | null>(null);
   const [selectedModel, setSelectedModel] = useState<Model>('lidar');
   const [selectedNaip, setSelectedNaip] = useState<Dataset | null>(null);
-  const [viewMode, setViewMode] = useState<'chm' | 'ndhm'>('chm');
+  const [viewMode, setViewMode] = useState<'chm' | 'ndhm' | 'naip'>('chm');
   const [datasetsIntersection, setDatasetsIntersection] =
     useState<Feature | null>(null);
 
@@ -199,7 +203,11 @@ export default function MyMap() {
           id={`${viewMode}-source`}
           type="raster"
           tiles={[
-            `/cog/tiles/WebMercatorQuad/{z}/{x}/{y}@2x?url=${result[viewMode].href}&rescale=${result[viewMode].rescale}&colormap_name=jet`,
+            `/cog/tiles/WebMercatorQuad/{z}/{x}/{y}@2x?url=${
+              result[viewMode].href
+            }&${result[viewMode].rescale}${
+              viewMode !== 'naip' ? '&colormap_name=jet' : ''
+            }`,
           ]}
           maxzoom={24}
           minzoom={0}
