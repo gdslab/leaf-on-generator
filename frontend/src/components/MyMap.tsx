@@ -1,5 +1,5 @@
 import 'maplibre-gl/dist/maplibre-gl.css';
-import { Feature, FeatureCollection } from 'geojson';
+import { Feature } from 'geojson';
 import { useEffect, useRef, useState } from 'react';
 import Map, { Layer, MapRef, Source } from 'react-map-gl/maplibre';
 import * as turf from '@turf/turf';
@@ -8,6 +8,7 @@ import DatasetsControl from './DatasetsControl';
 import DrawToolbar from './DrawToolbar';
 
 import { mapboxSatelliteBasemapStyle } from './basemapStyles';
+import { getBboxGeojson } from './utils';
 
 export type Dataset = {
   id: string;
@@ -77,30 +78,6 @@ export default function MyMap() {
     }
   }, [result]);
 
-  const getBboxGeojson = (
-    bbox: [number, number, number, number]
-  ): FeatureCollection => ({
-    type: 'FeatureCollection',
-    features: [
-      {
-        type: 'Feature',
-        geometry: {
-          type: 'Polygon',
-          coordinates: [
-            [
-              [bbox[0], bbox[1]],
-              [bbox[2], bbox[1]],
-              [bbox[2], bbox[3]],
-              [bbox[0], bbox[3]],
-              [bbox[0], bbox[1]],
-            ],
-          ],
-        },
-        properties: {},
-      },
-    ],
-  });
-
   useEffect(() => {
     if (selected3dep && selectedNaip) {
       const polygon1 = turf.bboxPolygon(selected3dep.bbox);
@@ -109,6 +86,18 @@ export default function MyMap() {
         turf.featureCollection([polygon1, polygon2])
       );
       setDatasetsIntersection(intersection);
+      if (mapRef.current) {
+        const map = mapRef.current.getMap();
+        if (intersection) {
+          const bbox = turf.bbox(intersection);
+          if (bbox.length === 4) {
+            map.fitBounds(bbox, {
+              padding: 20,
+              duration: 1000,
+            });
+          }
+        }
+      }
     }
   }, [selected3dep, selectedNaip]);
 
