@@ -166,4 +166,4 @@ cython_debug/
 .vscode/
 
 # Ignore large model
-backend/app/leaf_on_generator/test_oct2_.h5
+test_oct2_.h5

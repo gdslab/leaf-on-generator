@@ -3,14 +3,15 @@ import glob
 import numpy as np
 import rasterio
 
-# from tqdm import tqdm
+from keras.models import Model
+from tqdm import tqdm
 from tensorflow.keras.models import load_model
 
 
 # ============================
 # Pix2Pix 모델 로드 함수
 # ============================
-def load_trained_pix2pix_model(model_path):
+def load_trained_pix2pix_model(model_path: str) -> Model:
     """
     학습된 Pix2Pix 모델을 로드합니다.
     Args:
@@ -29,7 +30,9 @@ def load_trained_pix2pix_model(model_path):
 # ============================
 # Pix2Pix 예측 및 이미지 저장 함수
 # ============================
-def generate_and_save_pix2pix_images(model, input_dir, output_dir):
+def generate_and_save_pix2pix_images(
+    model: Model, input_dir: str, output_dir: str
+) -> None:
     """
     Pix2Pix 모델을 사용하여 이미지를 예측하고 저장합니다.
     Args:
@@ -43,8 +46,7 @@ def generate_and_save_pix2pix_images(model, input_dir, output_dir):
     input_files = sorted(glob.glob(os.path.join(input_dir, "*.tif")))
 
     print("Running Pix2Pix predictions...")
-    # for input_file in tqdm(input_files):
-    for input_file in input_files:
+    for input_file in tqdm(input_files):
         with rasterio.open(input_file) as src:
             img = src.read(1)
             img = np.expand_dims(img, axis=(0, -1))  # Add batch and channel dimensions

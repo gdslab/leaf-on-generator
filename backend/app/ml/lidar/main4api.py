@@ -1,24 +1,33 @@
-import os
-import pdal
 import json
+import os
+from typing import List, Tuple
+
 import geopandas as gpd
+import pdal
 from shapely.geometry import box
-from app.leaf_on_generator.my_functions import (
+
+from app.ml.lidar.model import (
+    load_trained_pix2pix_model,
+    generate_and_save_pix2pix_images,
+)
+from app.ml.lidar.my_functions import (
     generate_ndhm,
     save_patches,
     merge_patches,
     update_coordinate_system,
-)
-from app.leaf_on_generator.model import (
-    load_trained_pix2pix_model,
-    generate_and_save_pix2pix_images,
 )
 
 
 # ====================
 # 1. 데이터 준비 및 DTM/DSM 생성
 # ====================
-def process_dtm_dsm(boundary_coordinates, session_dir, ept_id, ept_url, ept_epsg):
+def process_dtm_dsm(
+    boundary_coordinates: List[float],
+    session_dir: str,
+    ept_id: str,
+    ept_url: str,
+    ept_epsg: int,
+) -> Tuple[str, str]:
     """
     DTM 및 DSM 생성
 
@@ -158,7 +167,9 @@ def process_dtm_dsm(boundary_coordinates, session_dir, ept_id, ept_url, ept_epsg
 # ====================
 # 2. NDHM generation and Pix2Pix model execution
 # ====================
-def process_ndhm_and_model(dtm, dsm, session_dir, model_path):
+def process_ndhm_and_model(
+    dtm: str, dsm: str, session_dir: str, model_path: str
+) -> Tuple[str, str]:
     """
     NDHM generation and Pix2Pix model application
     """
@@ -185,8 +196,13 @@ def process_ndhm_and_model(dtm, dsm, session_dir, model_path):
 # 3. main execution
 # ====================
 def your_main_model_function(
-    boundary_coordinates, session_dir, ept_id, ept_url, ept_epsg, model_path
-):
+    boundary_coordinates: List[float],
+    session_dir: str,
+    ept_id: str,
+    ept_url: str,
+    ept_epsg: int,
+    model_path: str,
+) -> Tuple[str, str]:
     dtm, dsm = process_dtm_dsm(
         boundary_coordinates, session_dir, ept_id, ept_url, ept_epsg
     )

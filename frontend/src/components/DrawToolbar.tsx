@@ -1,22 +1,29 @@
 import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css';
 import { Feature, Geometry, GeoJsonProperties } from 'geojson';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useMap } from 'react-map-gl/maplibre';
 import MapboxDraw, { DrawCreateEvent } from '@mapbox/mapbox-gl-draw';
 import { IControl } from 'maplibre-gl';
 
 import { drawStyles } from './drawStyles';
 
-import { Datasets } from './MyMap';
+import { Datasets, FeatureWithId, Result } from './MyMap';
 
 type DrawToolbarProps = {
-  setAoi: React.Dispatch<
-    React.SetStateAction<Feature<Geometry, GeoJsonProperties> | null>
-  >;
+  aoi: FeatureWithId | null;
+  result: Result | null;
+  setAoi: React.Dispatch<React.SetStateAction<FeatureWithId | null>>;
   setDatasets: React.Dispatch<React.SetStateAction<Datasets | null>>;
 };
 
-export default function DrawToolbar({ setAoi, setDatasets }: DrawToolbarProps) {
+export default function DrawToolbar({
+  aoi,
+  result,
+  setAoi,
+  setDatasets,
+}: DrawToolbarProps) {
+  const [draw, setDraw] = useState<MapboxDraw | null>(null);
+
   const { current: map } = useMap();
 
   useEffect(() => {
@@ -41,6 +48,7 @@ export default function DrawToolbar({ setAoi, setDatasets }: DrawToolbarProps) {
       defaultMode: 'draw_polygon',
       styles: drawStyles,
     });
+    setDraw(drawControl);
 
     // Solution to address missing mapbox classes
     // https://github.com/maplibre/maplibre-gl-js/issues/2601#issuecomment-1564747778
@@ -56,7 +64,7 @@ export default function DrawToolbar({ setAoi, setDatasets }: DrawToolbarProps) {
     map.addControl(drawControl as unknown as IControl, 'top-left');
 
     map.on('draw.create', (e: DrawCreateEvent) => {
-      async function sendAOI(feature: Feature) {
+      async function sendAOI(feature: FeatureWithId) {
         try {
           const response = await fetch('/api/datasets', {
             method: 'post',
@@ -70,7 +78,8 @@ export default function DrawToolbar({ setAoi, setDatasets }: DrawToolbarProps) {
           console.error('Error:', err);
         }
       }
-      sendAOI(e.features[0]);
+      const feature = e.features[0] as FeatureWithId;
+      sendAOI(feature);
     });
 
     return () => {
@@ -78,6 +87,13 @@ export default function DrawToolbar({ setAoi, setDatasets }: DrawToolbarProps) {
       map.removeControl(drawControl as unknown as IControl);
     };
   }, [map]);
+
+  useEffect(() => {
+    // Remove drawn polygon after results returned from server
+    if (aoi && draw && result) {
+      draw.delete(aoi.id);
+    }
+  }, [result]);
 
   return null;
 }

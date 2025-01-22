@@ -39,6 +39,7 @@ dependencies:
   - click=8.1.7=unix_pyh707e725_0
   - click-plugins=1.1.1=py_0
   - cligj=0.7.2=pyhd8ed1ab_1
+  - colorama=0.4.6=pyhd8ed1ab_0
   - contourpy=1.1.1=py38h7f3f72f_1
   - cryptography=41.0.7=py38he241bfc_1
   - curl=8.1.2=h409715c_0
@@ -257,6 +258,7 @@ dependencies:
   - threadpoolctl=3.5.0=pyhc1e730c_0
   - tiledb=2.13.2=hd532e3d_0
   - tk=8.6.13=noxft_h4845f30_101
+  - tqdm=4.67.1=pyhd8ed1ab_0
   - typer=0.12.5=pyhd8ed1ab_0
   - typer-slim=0.12.5=pyhd8ed1ab_0
   - typer-slim-standard=0.12.5=hd8ed1ab_0
