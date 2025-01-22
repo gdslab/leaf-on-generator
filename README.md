@@ -2,7 +2,7 @@
 
 ## Running locally with Docker Compose
 
-1. Copy `test_oct2_.h5` to the `backend/app/leaf_on_generator` directory.
+1. Copy `test_oct2_.h5` to the `backend/app/ml` directory.
 
 Run the following commands from the root repo directory.
 
