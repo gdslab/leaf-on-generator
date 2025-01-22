@@ -141,17 +141,17 @@ def run_3dep_model(
         naip_epsg = naip.epsg
         naip_gsd = naip.gsd
 
-    model_path = os.path.join("/app", "app", "ml", "test_oct2_.h5")
-
     # Run model here
     if model == "lidar":
         print("Running lidar_model...")
+        model_path = os.path.join("/app", "app", "ml", "test_oct2_.h5")
         ndhm_path, chm_path = lidar_model(
             bounding_box, session_dir, ept_id, ept_url, ept_epsg, model_path
         )
         naip_path = None
     elif model == "both":
         print("Running lidar_and_naip_model...")
+        model_path = os.path.join("/app", "app", "ml", "best_naip_unet_model.h5")
         chm_path, ndhm_path, naip_path = lidar_and_naip_model(
             bounding_box,
             session_dir,

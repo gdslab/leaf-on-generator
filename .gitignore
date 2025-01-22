@@ -167,3 +167,4 @@ cython_debug/
 
 # Ignore large model
 test_oct2_.h5
+best_naip_unet_model.h5
