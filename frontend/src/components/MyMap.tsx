@@ -47,9 +47,8 @@ export default function MyMap() {
   const [selectedModel, setSelectedModel] = useState<Model>('lidar');
   const [selectedNaip, setSelectedNaip] = useState<Dataset | null>(null);
   const [viewMode, setViewMode] = useState<'chm' | 'ndhm'>('chm');
-  const [datasetsIntersection, setDatasetsIntersection] = useState<Feature | null>(
-    null
-  );
+  const [datasetsIntersection, setDatasetsIntersection] =
+    useState<Feature | null>(null);
 
   const mapRef = useRef<MapRef | null>(null);
 
@@ -106,7 +105,9 @@ export default function MyMap() {
     if (selected3dep && selectedNaip) {
       const polygon1 = turf.bboxPolygon(selected3dep.bbox);
       const polygon2 = turf.bboxPolygon(selectedNaip.bbox);
-      const intersection = turf.intersect(turf.featureCollection([polygon1, polygon2]));
+      const intersection = turf.intersect(
+        turf.featureCollection([polygon1, polygon2])
+      );
       setDatasetsIntersection(intersection);
     }
   }, [selected3dep, selectedNaip]);
@@ -215,7 +216,11 @@ export default function MyMap() {
           minzoom={0}
           tileSize={512}
         >
-          <Layer id={`${viewMode}-layer`} type="raster" source={result.session_id} />
+          <Layer
+            id={`${viewMode}-layer`}
+            type="raster"
+            source={result.session_id}
+          />
         </Source>
       )}
       <DrawToolbar
