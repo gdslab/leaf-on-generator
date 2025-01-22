@@ -6,7 +6,7 @@ const drawStyles = [
     filter: ['all', ['==', 'active', 'true'], ['==', '$type', 'Polygon']],
     paint: {
       'fill-color': '#fbb03b', // Yellow
-      'fill-opacity': 0.4,
+      'fill-opacity': 0.6,
     },
   },
   // Yellow polygon fill (inactive)

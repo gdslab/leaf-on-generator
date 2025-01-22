@@ -1,18 +1,22 @@
 import './DatasetsControl.css';
-import { Feature } from 'geojson';
+import { Feature, Geometry, GeoJsonProperties } from 'geojson';
 import { useState } from 'react';
 
-import { Dataset, Datasets, Model, Result } from './MyMap';
+import { Dataset, Datasets, FeatureWithId, Model, Result } from './MyMap';
 import ViewMode from './ViewMode';
 
 type DatasetsControlProps = {
   aoi: Feature;
   datasets: Datasets;
   result: Result | null;
+  setAoi: React.Dispatch<React.SetStateAction<FeatureWithId | null>>;
   setDatasets: React.Dispatch<React.SetStateAction<Datasets | null>>;
   selected3DEP: Dataset | null;
   selectedModel: Model;
   selectedNaip: Dataset | null;
+  setDatasetIntersection: React.Dispatch<
+    React.SetStateAction<Feature<Geometry, GeoJsonProperties> | null>
+  >;
   setSelected3DEP: React.Dispatch<React.SetStateAction<Dataset | null>>;
   setSelectedModel: React.Dispatch<React.SetStateAction<Model>>;
   setSelectedNaip: React.Dispatch<React.SetStateAction<Dataset | null>>;
@@ -25,10 +29,12 @@ export default function DatasetsControl({
   aoi,
   datasets,
   result,
+  setAoi,
   setDatasets,
   selected3DEP,
   selectedModel,
   selectedNaip,
+  setDatasetIntersection,
   setSelected3DEP,
   setSelectedModel,
   setSelectedNaip,
@@ -44,6 +50,8 @@ export default function DatasetsControl({
     setSelectedNaip(null);
     setDatasets(null);
     setViewMode('chm');
+    setDatasetIntersection(null);
+    setAoi(null);
   };
 
   const handleSubmit = async () => {

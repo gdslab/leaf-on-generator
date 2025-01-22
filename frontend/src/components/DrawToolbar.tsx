@@ -55,7 +55,10 @@ export default function DrawToolbar({
     const originalOnAdd = drawControl.onAdd.bind(drawControl);
     drawControl.onAdd = (map) => {
       const controlContainer = originalOnAdd(map);
-      controlContainer.classList.add('maplibregl-ctrl', 'maplibregl-ctrl-group');
+      controlContainer.classList.add(
+        'maplibregl-ctrl',
+        'maplibregl-ctrl-group'
+      );
       return controlContainer;
     };
 
@@ -94,6 +97,12 @@ export default function DrawToolbar({
       draw.delete(aoi.id);
     }
   }, [result]);
+
+  useEffect(() => {
+    if (aoi && draw) {
+      draw.delete(aoi.id);
+    }
+  }, [aoi]);
 
   return null;
 }

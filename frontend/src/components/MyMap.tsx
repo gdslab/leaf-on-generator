@@ -57,17 +57,22 @@ export default function MyMap() {
 
   const mapRef = useRef<MapRef | null>(null);
 
+  // Zoom to drawn area of interest (AOI) on its creation
   useEffect(() => {
-    if (mapRef.current && selected3dep) {
+    if (mapRef.current && aoi) {
       const map = mapRef.current.getMap();
+      const bbox = turf.bbox(aoi);
 
-      map.fitBounds(selected3dep.bbox, {
-        padding: 20,
-        duration: 1000,
-      });
+      if (bbox.length === 4) {
+        map.fitBounds(bbox, {
+          padding: 20,
+          duration: 1000,
+        });
+      }
     }
-  }, [selected3dep]);
+  }, [aoi]);
 
+  // Zoom to extent of area of interest (AOI) when results are returned
   useEffect(() => {
     if (mapRef.current && aoi && result) {
       const map = mapRef.current.getMap();
@@ -82,12 +87,46 @@ export default function MyMap() {
     }
   }, [result]);
 
+  // Pan and zoom map to starting conditions when results are cleared
   useEffect(() => {
-    if (selected3dep && selectedNaip) {
+    if (mapRef.current && !result) {
+      const map = mapRef.current.getMap();
+
+      map.fitBounds([-86.921195, 40.423705, -86.921195, 40.423705], {
+        padding: 20,
+        duration: 1000,
+        zoom: 14,
+      });
+    }
+  }, [result]);
+
+  // Zoom to the intersection of selected datasets
+  useEffect(() => {
+    if (aoi && selected3dep && !selectedNaip) {
       const polygon1 = turf.bboxPolygon(selected3dep.bbox);
-      const polygon2 = turf.bboxPolygon(selectedNaip.bbox);
+      const polygon2 = turf.bboxPolygon(turf.bbox(aoi));
       const intersection = turf.intersect(
         turf.featureCollection([polygon1, polygon2])
+      );
+      setDatasetsIntersection(intersection);
+      if (mapRef.current) {
+        const map = mapRef.current.getMap();
+        if (intersection) {
+          const bbox = turf.bbox(intersection);
+          if (bbox.length === 4) {
+            map.fitBounds(bbox, {
+              padding: 20,
+              duration: 1000,
+            });
+          }
+        }
+      }
+    } else if (aoi && selected3dep && selectedNaip) {
+      const polygon1 = turf.bboxPolygon(selected3dep.bbox);
+      const polygon2 = turf.bboxPolygon(selectedNaip.bbox);
+      const polygon3 = turf.bboxPolygon(turf.bbox(aoi));
+      const intersection = turf.intersect(
+        turf.featureCollection([polygon1, polygon2, polygon3])
       );
       setDatasetsIntersection(intersection);
       if (mapRef.current) {
@@ -121,7 +160,9 @@ export default function MyMap() {
           aoi={aoi}
           datasets={datasets}
           result={result}
+          setAoi={setAoi}
           setDatasets={setDatasets}
+          setDatasetIntersection={setDatasetsIntersection}
           selected3DEP={selected3dep}
           selectedModel={selectedModel}
           selectedNaip={selectedNaip}
@@ -132,6 +173,24 @@ export default function MyMap() {
           setViewMode={setViewMode}
           viewMode={viewMode}
         />
+      )}
+      {aoi && !result && (
+        <Source
+          id="bbox-aoi-source"
+          type="geojson"
+          data={turf.bboxPolygon(turf.bbox(aoi))}
+        >
+          <Layer
+            id="bbox-aoi-layer"
+            type="fill"
+            paint={{ 'fill-color': '#fde68a', 'fill-opacity': 0.6 }}
+          />
+          <Layer
+            id="bbox-aoi-border"
+            type="line"
+            paint={{ 'line-color': '#f59e0b', 'line-width': 2 }}
+          />
+        </Source>
       )}
       {selected3dep && !datasetsIntersection && !result && (
         <Source
@@ -175,7 +234,7 @@ export default function MyMap() {
           />
         </Source>
       )}
-      {selected3dep && selectedNaip && datasetsIntersection && !result && (
+      {datasetsIntersection && !result && (
         <Source
           id="bbox-intersection-source"
           type="geojson"
@@ -184,13 +243,13 @@ export default function MyMap() {
           <Layer
             id="bbox-intersection-layer"
             type="fill"
-            paint={{ 'fill-color': '#a855f7', 'fill-opacity': 0.5 }}
+            paint={{ 'fill-color': '#84cc16', 'fill-opacity': 0.6 }}
           />
           <Layer
             id="bbox-intersection-border"
             type="line"
             paint={{
-              'line-color': '#fde047',
+              'line-color': '#3f6212',
               'line-width': 2,
               'line-dasharray': [4, 2],
             }}
