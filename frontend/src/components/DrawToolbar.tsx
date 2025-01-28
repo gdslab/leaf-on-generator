@@ -1,5 +1,4 @@
 import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css';
-import { Feature, Geometry, GeoJsonProperties } from 'geojson';
 import { useEffect, useState } from 'react';
 import { useMap } from 'react-map-gl/maplibre';
 import MapboxDraw, { DrawCreateEvent } from '@mapbox/mapbox-gl-draw';

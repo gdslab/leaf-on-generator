@@ -1,6 +1,6 @@
 import './ViewMode.css';
 
-import { Dataset, Result } from './MyMap';
+import { Result } from './MyMap';
 
 export default function ViewMode({
   result,

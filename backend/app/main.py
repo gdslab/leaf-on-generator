@@ -34,10 +34,9 @@ app.add_middleware(
 app.mount("/static", StaticFiles(directory="/static"), name="static")
 
 
-@app.get("/")
-def read_root(request: Request) -> Any:
-    print(request)
-    return {"Hello": "World"}
+@app.get("/api/health", status_code=status.HTTP_200_OK)
+def check_health() -> Any:
+    return {"status": "healthy"}
 
 
 @app.post("/api/datasets", response_model=DatasetsResponse)
