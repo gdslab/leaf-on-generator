@@ -3,10 +3,10 @@ services:
     build:
       context: './frontend'
       dockerfile: frontend.prod.dockerfile
+    image: gdslab/log-frontend:latest
     platform: linux/x86_64
     depends_on:
       - backend
-      - proxy
     tmpfs:
       - /tmp
     read_only: true
@@ -40,11 +40,10 @@ services:
       args:
         INSTALL_DEV: false
         NUM_OF_WORKERS: 4
+    image: gdslab/log-backend:latest
     platform: linux/x86_64
     volumes:
       - user-data:/static
-    depends_on:
-      - proxy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5000/api/health"]
       interval: 1m30s
@@ -59,11 +58,11 @@ services:
         window: 120s
       resources:
         limits:
-          cpus: '4'
-          memory: 8G
+          cpus: '8'
+          memory: 32G
         reservations:
-          cpus: '2'
-          memory: 4G
+          cpus: '4'
+          memory: 16G
     env_file:
       - .backend.env
 
@@ -71,8 +70,6 @@ services:
     image: ghcr.io/developmentseed/titiler:0.19.0
     volumes:
       - user-data:/static
-    depends_on:
-      - proxy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
       interval: 1m30s
@@ -122,6 +119,7 @@ services:
     build: 
       context: ./proxy
       dockerfile: proxy.prod.dockerfile
+    image: gdslab/log-proxy:latest
     platform: linux/x86_64
     tmpfs:
       - /tmp
@@ -149,6 +147,7 @@ services:
     depends_on:
       - frontend
       - backend
+      - titiler
 
 volumes:
   user-data:
