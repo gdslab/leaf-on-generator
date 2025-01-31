@@ -24,11 +24,11 @@ services:
         window: 120s
       resources:
         limits:
-          cpus: '4'
-          memory: 8G
-        reservations:
           cpus: '2'
-          memory: 4G
+          memory: 2G
+        reservations:
+          cpus: '1'
+          memory: 1G
     security_opt:
       - no-new-privileges=true
 
@@ -39,7 +39,7 @@ services:
       dockerfile: backend.dockerfile
       args:
         INSTALL_DEV: false
-        NUM_OF_WORKERS: 4
+        NUM_OF_WORKERS: 1
     image: gdslab/log-backend:latest
     platform: linux/x86_64
     volumes:
@@ -58,11 +58,11 @@ services:
         window: 120s
       resources:
         limits:
-          cpus: '8'
-          memory: 32G
-        reservations:
           cpus: '4'
-          memory: 16G
+          memory: 4G
+        reservations:
+          cpus: '2'
+          memory: 2G
     env_file:
       - .backend.env
 
@@ -95,11 +95,11 @@ services:
       - PORT=8888
       # Gunicorn / Uvicorn
       # https://github.com/tiangolo/uvicorn-gunicorn-docker#web_concurrency
-      # - WEB_CONCURRENCY=1
+      - WEB_CONCURRENCY=5
       - ACCESS_LOG=/var/log/titiler-access.log
       - ERROR_LOG=/var/log/titiler-error.log
       # https://github.com/tiangolo/uvicorn-gunicorn-docker#workers_per_core
-      - WORKERS_PER_CORE=1
+      #- WORKERS_PER_CORE=1
       # GDAL config
       - CPL_TMPDIR=/tmp
       - GDAL_CACHEMAX=75%
@@ -140,10 +140,10 @@ services:
       resources:
         limits:
           cpus: '2'
-          memory: 4G
+          memory: 2G
         reservations:
           cpus: '1'
-          memory: 2G
+          memory: 1G
     depends_on:
       - frontend
       - backend
