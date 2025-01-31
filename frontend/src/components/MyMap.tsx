@@ -141,6 +141,25 @@ export default function MyMap() {
           }
         }
       }
+    } else if (aoi && selectedNaip && !selected3dep) {
+      const polygon1 = turf.bboxPolygon(selectedNaip.bbox);
+      const polygon2 = turf.bboxPolygon(turf.bbox(aoi));
+      const intersection = turf.intersect(
+        turf.featureCollection([polygon1, polygon2])
+      );
+      setDatasetsIntersection(intersection);
+      if (mapRef.current) {
+        const map = mapRef.current.getMap();
+        if (intersection) {
+          const bbox = turf.bbox(intersection);
+          if (bbox.length === 4) {
+            map.fitBounds(bbox, {
+              padding: 20,
+              duration: 1000,
+            });
+          }
+        }
+      }
     }
   }, [selected3dep, selectedNaip]);
 
