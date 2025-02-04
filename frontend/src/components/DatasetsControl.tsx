@@ -46,9 +46,11 @@ export default function DatasetsControl({
   viewMode,
   setViewMode,
 }: DatasetsControlProps) {
+  const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleReset = () => {
+    setError('');
     setIsPollingProgress(false);
     setResult(null);
     setSelected3DEP(null);
@@ -71,24 +73,26 @@ export default function DatasetsControl({
         }
       } else if (data.status === 'pending' || data.status === 'running') {
         setTimeout(() => {
-          if (isPollingProgress) {
-            checkStatus(sessionId);
-          }
+          checkStatus(sessionId);
         }, 5000);
       } else if (data.status === 'error') {
         console.error('Error: Unable to process request.');
+        setError('Error: Unable to process request.');
         setIsPollingProgress(false);
       } else {
         console.error('Error: Unable to process request.');
+        setError('Error: Unable to process request.');
         setIsPollingProgress(false);
       }
     } catch (err) {
       console.error('Error:', err);
+      setError('Error: Unable to process request.');
       setIsPollingProgress(false);
     }
   };
 
   const handleSubmit = async () => {
+    setError('');
     try {
       setIsSubmitting(true);
       const payload = {
@@ -108,6 +112,7 @@ export default function DatasetsControl({
       checkStatus(result.session_id);
     } catch (err) {
       console.error('Error:', err);
+      setError('Error: Unable to submit job.');
       setIsSubmitting(false);
     }
   };
@@ -197,6 +202,20 @@ export default function DatasetsControl({
             : 'Submit job'}
         </button>
       </form>
+      {error && (
+        <div
+          style={{
+            color: 'red',
+            fontSize: 18,
+            fontWeight: 600,
+            marginTop: 15,
+            textAlign: 'center',
+            width: '100%',
+          }}
+        >
+          {error}
+        </div>
+      )}
       {!result && isPollingProgress && (
         <div
           style={{
