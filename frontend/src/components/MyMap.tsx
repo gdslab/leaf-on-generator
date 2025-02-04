@@ -32,14 +32,17 @@ export type Result = {
   chm: {
     href: string;
     rescale: string;
+    file_size: number;
   };
   ndhm: {
     href: string;
     rescale: string;
+    file_size: number;
   };
   naip?: {
     href: string;
     rescale: string;
+    file_size: number;
   };
   session_id: string;
 };

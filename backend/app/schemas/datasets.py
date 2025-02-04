@@ -26,6 +26,7 @@ class DatasetsResponse(BaseModel):
 class ResultDataset(BaseModel):
     href: str
     rescale: str
+    file_size: float
 
 
 class ModelResponse(BaseModel):

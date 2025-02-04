@@ -18,39 +18,76 @@ export default function ViewMode({
       <fieldset>
         <legend>Results</legend>
         <h3>Display on map</h3>
-        <select
-          name="viewMode"
-          value={viewMode}
-          onChange={(e) =>
-            setViewMode(e.target.value as 'chm' | 'ndhm' | 'naip')
-          }
-        >
-          <option value="chm">CHM</option>
-          <option value="ndhm">NDHM</option>
-          {result.naip && <option value="naip">NAIP</option>}
-        </select>
-        <h3>Download</h3>
         <div
           style={{
             display: 'flex',
             gap: '8px',
           }}
         >
+          <div>
+            <input
+              type="radio"
+              id="chm"
+              name="viewMode"
+              value="chm"
+              checked={viewMode === 'chm'}
+              onChange={(e) => setViewMode(e.target.value as 'chm')}
+            />
+            <label htmlFor="chm">Generated CHM</label>
+          </div>
+          <div>
+            <input
+              type="radio"
+              id="ndhm"
+              name="viewMode"
+              value="ndhm"
+              checked={viewMode === 'ndhm'}
+              onChange={(e) => setViewMode(e.target.value as 'ndhm')}
+            />
+            <label htmlFor="ndhm">Original CHM</label>
+          </div>
+          <div>
+            <input
+              type="radio"
+              id="naip"
+              name="viewMode"
+              value="naip"
+              checked={viewMode === 'naip'}
+              onChange={(e) => setViewMode(e.target.value as 'naip')}
+            />
+            <label htmlFor="naip">NAIP</label>
+          </div>
+        </div>
+
+        <h3>Download</h3>
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '8px',
+          }}
+        >
           <a
             href={result.chm.href}
-            download="chm.tif"
-            aria-label="Download CHM file"
+            download="generated-chm.tif"
+            aria-label="Download Generated CHM file"
             type="image/tiff"
           >
-            CHM (GeoTIFF)
+            {`Generated CHM (GeoTIFF, ${(
+              result.chm.file_size /
+              (1024 * 1024)
+            ).toFixed(2)} MB)`}
           </a>
           <a
             href={result.ndhm.href}
-            download="ndhm.tif"
-            aria-label="Download NDHM file"
+            download="original-chm.tif"
+            aria-label="Download Original CHM file"
             type="image/tiff"
           >
-            NDHM (GeoTIFF)
+            {`Original CHM (GeoTIFF, ${(
+              result.ndhm.file_size /
+              (1024 * 1024)
+            ).toFixed(2)} MB)`}
           </a>
           {result.naip && (
             <a
@@ -59,7 +96,10 @@ export default function ViewMode({
               aria-label="Download NAIP file"
               type="image/tiff"
             >
-              NAIP (GeoTIFF)
+              {`NAIP (GeoTIFF, ${(
+                result.naip.file_size /
+                (1024 * 1024)
+              ).toFixed(2)} MB)`}
             </a>
           )}
         </div>

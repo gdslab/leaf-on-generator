@@ -1,4 +1,5 @@
 import base64
+import os
 import secrets
 
 
@@ -15,3 +16,22 @@ def generate_secret_key() -> str:
     secret_key_str = base64.b64encode(secret_key_bytes).decode("utf-8")
 
     return secret_key_str
+
+
+def get_file_size_in_bytes(filepath: str) -> float:
+    """Returns the size of the file at file_path in bytes.
+
+    Args:
+        filepath (str): The path to the file.
+
+    Raises:
+        FileNotFoundError: If the file does not exist.
+
+    Returns:
+        float: The size of the file in bytes.
+    """
+
+    if not os.path.isfile(filepath):
+        raise FileNotFoundError(f"The file '{filepath}' does not exist.")
+
+    return os.path.getsize(filepath)

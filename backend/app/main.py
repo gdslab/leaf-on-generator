@@ -1,14 +1,13 @@
 import os
 import uuid
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, Optional
 
 import numpy as np
 import rasterio
-from fastapi import Body, FastAPI, HTTPException, Request, status
+from fastapi import Body, FastAPI, HTTPException, status
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from geojson_pydantic import Feature, Polygon
-from pydantic import AnyHttpUrl
 from pystac_client import Client
 from starlette.middleware.sessions import SessionMiddleware
 
@@ -22,7 +21,7 @@ from app.schemas.datasets import (
     ModelResponse,
     NaipDatasetItem,
 )
-from app.utils import generate_secret_key
+from app.utils import generate_secret_key, get_file_size_in_bytes
 
 app = FastAPI(title="Leaf-on Generator")
 
@@ -194,6 +193,7 @@ def run_3dep_model(
         naip_payload = {
             "href": naip_path,
             "rescale": f"bidx=1&bidx=2&bidx=3&rescale={band1_min_value},{band1_max_value}&rescale={band2_min_value},{band2_max_value}&rescale={band3_min_value},{band3_max_value}",
+            "file_size": get_file_size_in_bytes(naip_path),
         }
     else:
         naip_payload = None
@@ -203,10 +203,12 @@ def run_3dep_model(
         chm={
             "href": chm_path,
             "rescale": f"rescale={chm_min_value},{chm_max_value}",
+            "file_size": get_file_size_in_bytes(chm_path),
         },
         ndhm={
             "href": ndhm_path,
             "rescale": f"rescale={chm_min_value},{chm_max_value}",
+            "file_size": get_file_size_in_bytes(ndhm_path),
         },
         naip=naip_payload,
         session_id=session_id,
