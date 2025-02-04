@@ -3,6 +3,7 @@ services:
     build:
       context: './frontend'
       dockerfile: frontend.dockerfile
+    image: gdslab/log-frontend:dev
     platform: linux/x86_64
     command: yarn run dev --host 0.0.0.0 --port 8000
     ports:
@@ -19,13 +20,28 @@ services:
       args:
         INSTALL_DEV: true
         NUM_OF_WORKERS: 4
+    image: gdslab/log-backend:dev
     platform: linux/x86_64
     ports: 
       - 5000:5000
     volumes:
       - ./backend:/app
+      - db-data:/var/lib/app
       - user-data:/static
     restart: always
+    env_file:
+      - .backend.env
+
+  celery_worker:
+    image: gdslab/log-backend:dev
+    platform: linux/x86_64
+    command: /app/worker-start.sh
+    volumes:
+      - db-data:/var/lib/app
+      - user-data:/static
+    restart: always
+    depends_on:
+      - redis
     env_file:
       - .backend.env
 
@@ -58,6 +74,12 @@ services:
       - CPL_VSIL_CURL_ALLOWED_EXTENSIONS=.tif,.TIF,.tiff
       - CPL_VSIL_CURL_CACHE_SIZE=200000000
 
+
+  redis:
+    image: redis:alpine
+    platform: linux/x86_64
+    restart: always
+
   proxy:
     build: 
       context: ./proxy
@@ -73,4 +95,5 @@ services:
       - backend
 
 volumes:
+  db-data:
   user-data:

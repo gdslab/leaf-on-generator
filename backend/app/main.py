@@ -3,7 +3,6 @@ import uuid
 from typing import Any, Dict, Optional
 
 import numpy as np
-import rasterio
 from fastapi import Body, FastAPI, HTTPException, status
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -11,17 +10,16 @@ from geojson_pydantic import Feature, Polygon
 from pystac_client import Client
 from starlette.middleware.sessions import SessionMiddleware
 
-from app.ml.lidar.main4api import your_main_model_function as lidar_model
-from app.ml.lidar_and_naip.main4api_unet import (
-    your_main_model_function2 as lidar_and_naip_model,
-)
+from app.db.crud import add_task, get_task
+from app.celery.tasks import run_lidar_only_model, run_lidar_and_naip_model
 from app.schemas.datasets import (
     DatasetsResponse,
     LidarDatasetItem,
     ModelResponse,
     NaipDatasetItem,
 )
-from app.utils import generate_secret_key, get_file_size_in_bytes
+from app.schemas.tasks import Task
+from app.utils import generate_secret_key
 
 app = FastAPI(title="Leaf-on Generator")
 
@@ -36,6 +34,12 @@ app.mount("/static", StaticFiles(directory="/static"), name="static")
 @app.get("/api/health", status_code=status.HTTP_200_OK)
 def check_health() -> Any:
     return {"status": "healthy"}
+
+
+@app.get("/api/check_status", response_model=Optional[Task])
+def get_session_status(session_id: str) -> Any:
+    task = get_task(session_id=session_id)
+    return task
 
 
 @app.post("/api/datasets", response_model=DatasetsResponse)
@@ -66,10 +70,6 @@ def find_datasets_in_aoi(aoi: Feature[Polygon, Dict]) -> Any:
 
     # Search NAIP collection
     search_naip = client.search(max_items=10, collections=["naip"], bbox=bounding_box)
-
-    # Get href for search results
-    base_url_3dep = "https://stac.d2s.org/collections/3dep/items"
-    base_url_naip = "https://stac.d2s.org/collections/3dep/items"
 
     # Create payload with dataset IDs and URLs
     payload = DatasetsResponse(
@@ -107,6 +107,9 @@ def run_3dep_model(
     # Create session ID
     session_id = str(uuid.uuid4())
 
+    # Add task to database
+    add_task(session_id=session_id, status="pending")
+
     # Create folder in static directory for session
     session_dir = os.path.join("/static", session_id)
     if not os.path.isdir(session_dir):
@@ -143,24 +146,36 @@ def run_3dep_model(
     if model == "lidar":
         print("Running lidar_model...")
         model_path = os.path.join("/app", "app", "ml", "test_oct2_.h5")
-        ndhm_path, chm_path = lidar_model(
-            bounding_box, session_dir, ept_id, ept_url, ept_epsg, model_path
+
+        run_lidar_only_model.apply_async(
+            args=(
+                bounding_box,
+                session_id,
+                session_dir,
+                ept_id,
+                ept_url,
+                ept_epsg,
+                model_path,
+            )
         )
-        naip_path = None
+
     elif model == "both":
         print("Running lidar_and_naip_model...")
         model_path = os.path.join("/app", "app", "ml", "best_naip_unet_model.h5")
-        chm_path, ndhm_path, naip_path = lidar_and_naip_model(
-            bounding_box,
-            session_dir,
-            ept_id,
-            ept_url,
-            ept_epsg,
-            naip_id,
-            naip_url,
-            naip_epsg,
-            # naip_gsd,
-            model_path,
+
+        run_lidar_and_naip_model.apply_async(
+            args=(
+                bounding_box,
+                session_id,
+                session_dir,
+                ept_id,
+                ept_url,
+                ept_epsg,
+                naip_id,
+                naip_url,
+                naip_epsg,
+                model_path,
+            )
         )
     else:
         raise HTTPException(
@@ -168,52 +183,7 @@ def run_3dep_model(
             detail="Selected model must be 'lidar' or 'both'",
         )
 
-    # Get rescale values for chm
-    with rasterio.open(chm_path) as src:
-        band1 = src.read(1)
-        chm_min_value = band1.min()
-        chm_max_value = band1.max()
-
-    print(f"model: {model}")
-    print(f"naip_path: {naip_path}")
-
-    # Prepare naip payload if available
-    if model == "both" and naip_path:
-        with rasterio.open(naip_path) as src:
-            band1 = src.read(1)
-            band2 = src.read(2)
-            band3 = src.read(3)
-            band1_min_value = band1.min()
-            band1_max_value = band1.max()
-            band2_min_value = band2.min()
-            band2_max_value = band2.max()
-            band3_min_value = band3.min()
-            band3_max_value = band3.max()
-
-        naip_payload = {
-            "href": naip_path,
-            "rescale": f"bidx=1&bidx=2&bidx=3&rescale={band1_min_value},{band1_max_value}&rescale={band2_min_value},{band2_max_value}&rescale={band3_min_value},{band3_max_value}",
-            "file_size": get_file_size_in_bytes(naip_path),
-        }
-    else:
-        naip_payload = None
-
-    # Create response with URL for CHM and session ID
-    payload = ModelResponse(
-        chm={
-            "href": chm_path,
-            "rescale": f"rescale={chm_min_value},{chm_max_value}",
-            "file_size": get_file_size_in_bytes(chm_path),
-        },
-        ndhm={
-            "href": ndhm_path,
-            "rescale": f"rescale={chm_min_value},{chm_max_value}",
-            "file_size": get_file_size_in_bytes(ndhm_path),
-        },
-        naip=naip_payload,
-        session_id=session_id,
-    )
-    response = JSONResponse(content=payload.model_dump())
+    response = JSONResponse(content={"session_id": session_id})
     response.set_cookie(key="session_id", value=session_id, httponly=True)
 
     return response

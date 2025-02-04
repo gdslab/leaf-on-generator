@@ -56,10 +56,12 @@ ENV PATH="$CONDA_ENV_PATH/bin:$PATH"
 COPY --chown=app:app . /app
 
 # create directory for logs, temp files, and user uploads, and update permissions
-RUN mkdir -p /var/tmp/app \
+RUN mkdir -p /var/lib/app \
+    && mkdir -p /var/tmp/app \
     && mkdir /static \
-    && chown -R app:app /static \
-    && chown -R app:app /var/tmp/app
+    && chown -R app:app /var/lib/app \
+    && chown -R app:app /var/tmp/app \
+    && chown -R app:app /static
 
 # change to non-root user
 USER app
