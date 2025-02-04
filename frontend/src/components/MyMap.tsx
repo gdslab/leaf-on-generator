@@ -47,9 +47,18 @@ export type Result = {
   session_id: string;
 };
 
+export type Task = {
+  session_id: string;
+  status: string;
+  start_time: string;
+  end_time?: string;
+  payload?: string;
+};
+
 export default function MyMap() {
   const [aoi, setAoi] = useState<FeatureWithId | null>(null);
   const [datasets, setDatasets] = useState<Datasets | null>(null);
+  const [isPollingProgress, setIsPollingProgress] = useState<boolean>(false);
   const [result, setResult] = useState<Result | null>(null);
   const [selected3dep, setSelected3dep] = useState<Dataset | null>(null);
   const [selectedModel, setSelectedModel] = useState<Model>('lidar');
@@ -182,12 +191,14 @@ export default function MyMap() {
           aoi={aoi}
           datasets={datasets}
           result={result}
+          isPollingProgress={isPollingProgress}
           setAoi={setAoi}
           setDatasets={setDatasets}
           setDatasetIntersection={setDatasetsIntersection}
           selected3DEP={selected3dep}
           selectedModel={selectedModel}
           selectedNaip={selectedNaip}
+          setIsPollingProgress={setIsPollingProgress}
           setSelected3DEP={setSelected3dep}
           setSelectedModel={setSelectedModel}
           setSelectedNaip={setSelectedNaip}

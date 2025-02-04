@@ -35,6 +35,12 @@
     background-color: #45a049; /* Darker green on hover */
 }
 
+.submit-button:disabled {
+    background-color: #cccccc;
+    color: #636363;
+    cursor: not-allowed;
+}
+
 .reset-button {
     background-color: #e11d48; /* Rose background */
     color: white; /* White text */

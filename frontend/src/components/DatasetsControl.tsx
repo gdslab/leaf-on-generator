@@ -2,12 +2,13 @@ import './DatasetsControl.css';
 import { Feature, Geometry, GeoJsonProperties } from 'geojson';
 import { useState } from 'react';
 
-import { Dataset, Datasets, FeatureWithId, Model, Result } from './MyMap';
+import { Dataset, Datasets, FeatureWithId, Model, Result, Task } from './MyMap';
 import ViewMode from './ViewMode';
 
 type DatasetsControlProps = {
   aoi: Feature;
   datasets: Datasets;
+  isPollingProgress: boolean;
   result: Result | null;
   setAoi: React.Dispatch<React.SetStateAction<FeatureWithId | null>>;
   setDatasets: React.Dispatch<React.SetStateAction<Datasets | null>>;
@@ -17,6 +18,7 @@ type DatasetsControlProps = {
   setDatasetIntersection: React.Dispatch<
     React.SetStateAction<Feature<Geometry, GeoJsonProperties> | null>
   >;
+  setIsPollingProgress: React.Dispatch<React.SetStateAction<boolean>>;
   setSelected3DEP: React.Dispatch<React.SetStateAction<Dataset | null>>;
   setSelectedModel: React.Dispatch<React.SetStateAction<Model>>;
   setSelectedNaip: React.Dispatch<React.SetStateAction<Dataset | null>>;
@@ -28,6 +30,7 @@ type DatasetsControlProps = {
 export default function DatasetsControl({
   aoi,
   datasets,
+  isPollingProgress,
   result,
   setAoi,
   setDatasets,
@@ -35,6 +38,7 @@ export default function DatasetsControl({
   selectedModel,
   selectedNaip,
   setDatasetIntersection,
+  setIsPollingProgress,
   setSelected3DEP,
   setSelectedModel,
   setSelectedNaip,
@@ -45,6 +49,7 @@ export default function DatasetsControl({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleReset = () => {
+    setIsPollingProgress(false);
     setResult(null);
     setSelected3DEP(null);
     setSelectedNaip(null);
@@ -52,6 +57,35 @@ export default function DatasetsControl({
     setViewMode('chm');
     setDatasetIntersection(null);
     setAoi(null);
+  };
+
+  const checkStatus = async (sessionId: string) => {
+    try {
+      const response = await fetch(`/api/check_status?session_id=${sessionId}`);
+      const data: Task = await response.json();
+      if (data.status === 'finished') {
+        if (data.payload) {
+          const result = JSON.parse(data.payload) as Result;
+          setResult(result);
+          setIsPollingProgress(false);
+        }
+      } else if (data.status === 'pending' || data.status === 'running') {
+        setTimeout(() => {
+          if (isPollingProgress) {
+            checkStatus(sessionId);
+          }
+        }, 5000);
+      } else if (data.status === 'error') {
+        console.error('Error: Unable to process request.');
+        setIsPollingProgress(false);
+      } else {
+        console.error('Error: Unable to process request.');
+        setIsPollingProgress(false);
+      }
+    } catch (err) {
+      console.error('Error:', err);
+      setIsPollingProgress(false);
+    }
   };
 
   const handleSubmit = async () => {
@@ -69,8 +103,9 @@ export default function DatasetsControl({
         body: JSON.stringify(payload),
       });
       const result = await response.json();
-      setResult(result);
+      setIsPollingProgress(true);
       setIsSubmitting(false);
+      checkStatus(result.session_id);
     } catch (err) {
       console.error('Error:', err);
       setIsSubmitting(false);
@@ -150,10 +185,31 @@ export default function DatasetsControl({
             </div>
           )}
         </fieldset>
-        <button className="submit-button" type="submit" disabled={isSubmitting}>
-          {isSubmitting ? 'Running model...' : 'Run model'}
+        <button
+          className="submit-button"
+          type="submit"
+          disabled={isSubmitting || result !== null || isPollingProgress}
+        >
+          {isSubmitting
+            ? 'Submitting job...'
+            : isPollingProgress
+            ? 'Job submitted'
+            : 'Submit job'}
         </button>
       </form>
+      {!result && isPollingProgress && (
+        <div
+          style={{
+            fontSize: 18,
+            fontWeight: 600,
+            marginTop: 15,
+            textAlign: 'center',
+            width: '100%',
+          }}
+        >
+          Waiting for results...
+        </div>
+      )}
       {result && result?.[viewMode] && (
         <ViewMode
           result={result}

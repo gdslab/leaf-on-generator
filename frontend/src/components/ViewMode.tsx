@@ -46,17 +46,19 @@ export default function ViewMode({
             />
             <label htmlFor="ndhm">Original CHM</label>
           </div>
-          <div>
-            <input
-              type="radio"
-              id="naip"
-              name="viewMode"
-              value="naip"
-              checked={viewMode === 'naip'}
-              onChange={(e) => setViewMode(e.target.value as 'naip')}
-            />
-            <label htmlFor="naip">NAIP</label>
-          </div>
+          {result?.naip && (
+            <div>
+              <input
+                type="radio"
+                id="naip"
+                name="viewMode"
+                value="naip"
+                checked={viewMode === 'naip'}
+                onChange={(e) => setViewMode(e.target.value as 'naip')}
+              />
+              <label htmlFor="naip">NAIP</label>
+            </div>
+          )}
         </div>
 
         <h3>Download</h3>
