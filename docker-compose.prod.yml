@@ -70,7 +70,7 @@ services:
       - .backend.env
 
   celery_worker:
-    image: gdslab/log-backend:dev
+    image: gdslab/log-backend:latest
     platform: linux/x86_64
     command: /app/worker-start.sh
     volumes:
