@@ -8,9 +8,6 @@
 
 3. Rename `.backend.env.example` to `.backend.env`. Environment settings:
 - `AOI_AREA_LIMIT` (integer): Specifies the maximum allowable user-drawn area in square meters.
-- `CELERY_BROKER_URL` (string): Leave on default value.
-- `CELERY_RESULT_BACKEND` (string): Leave on default value.
-- `DB_FILE` (string): Path to sqlite3 database file. Leave on default value.
 - `SECRET_KEY` (string): Change to your own unique, strong secret key.
 
 4. Rename `.env.development.example` to `.env.development`. Environment settings:
