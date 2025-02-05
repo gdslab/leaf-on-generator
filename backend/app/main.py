@@ -19,7 +19,9 @@ from app.schemas.datasets import (
     NaipDatasetItem,
 )
 from app.schemas.tasks import Task
-from app.utils import generate_secret_key
+from app.utils import generate_secret_key, is_aoi_too_large
+
+AOI_AREA_LIMIT = os.environ.get("AOI_AREA_LIMIT", 1000000)
 
 app = FastAPI(title="Leaf-on Generator")
 
@@ -63,8 +65,6 @@ def find_datasets_in_aoi(aoi: Feature[Polygon, Dict]) -> Any:
     # Connect to STAC API
     client = Client.open("https://stac-api.d2s.org")
 
-    print(f"bounding_box: {bounding_box}")
-
     # Search 3DEP collection
     search_3dep = client.search(max_items=10, collections=["3dep"], bbox=bounding_box)
 
@@ -104,6 +104,13 @@ def run_3dep_model(
     model: str = Body(default="lidar"),
     naip: Optional[NaipDatasetItem] = None,
 ) -> Any:
+    # Verify aoi is within 1,000,000 square meter area limit
+    if is_aoi_too_large(aoi):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Area of interest cannot exceed {AOI_AREA_LIMIT} square meters.",
+        )
+
     # Create session ID
     session_id = str(uuid.uuid4())
 

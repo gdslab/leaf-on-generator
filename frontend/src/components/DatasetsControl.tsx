@@ -51,11 +51,12 @@ export default function DatasetsControl({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    if (aoi && area(aoi) > 1000000) {
+    const areaLimit = Number(import.meta.env?.VITE_AOI_AREA_LIMIT) || 1000000;
+    if (aoi && area(aoi) > areaLimit) {
       setError(
         `The selected area is too large. It measures ${parseFloat(
           area(aoi).toFixed(2)
-        ).toLocaleString()} square meters, but must be less than 1,000,000 square meters. Please reset and draw a smaller area.`
+        ).toLocaleString()} square meters, but must be less than ${areaLimit.toLocaleString()} square meters. Please reset and draw a smaller area.`
       );
     }
   }, [aoi]);
