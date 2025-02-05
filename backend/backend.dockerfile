@@ -52,6 +52,11 @@ COPY --from=conda-env-base --chown=app:app $CONDA_ENV_PATH $CONDA_ENV_PATH
 # update path to include venv bin
 ENV PATH="$CONDA_ENV_PATH/bin:$PATH"
 
+# add application environment variables
+ENV DB_FILE="/var/lib/app/tasks.db"
+ENV CELERY_BROKER_URL=redis://redis:6379/0
+ENV CELERY_RESULT_BACKEND=redis://redis:6379/0
+
 # copy over application code
 COPY --chown=app:app . /app
 
