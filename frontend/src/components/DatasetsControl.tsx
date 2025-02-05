@@ -1,6 +1,7 @@
 import './DatasetsControl.css';
 import { Feature, Geometry, GeoJsonProperties } from 'geojson';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { area } from '@turf/area';
 
 import { Dataset, Datasets, FeatureWithId, Model, Result, Task } from './MyMap';
 import ViewMode from './ViewMode';
@@ -48,6 +49,16 @@ export default function DatasetsControl({
 }: DatasetsControlProps) {
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (aoi && area(aoi) > 1000000) {
+      setError(
+        `The selected area is too large. It measures ${parseFloat(
+          area(aoi).toFixed(2)
+        ).toLocaleString()} square meters, but must be less than 1,000,000 square meters. Please reset and draw a smaller area.`
+      );
+    }
+  }, [aoi]);
 
   const handleReset = () => {
     setError('');
@@ -193,7 +204,12 @@ export default function DatasetsControl({
         <button
           className="submit-button"
           type="submit"
-          disabled={isSubmitting || result !== null || isPollingProgress}
+          disabled={
+            isSubmitting ||
+            result !== null ||
+            isPollingProgress ||
+            error.length > 0
+          }
         >
           {isSubmitting
             ? 'Submitting job...'
@@ -209,7 +225,8 @@ export default function DatasetsControl({
             fontSize: 18,
             fontWeight: 600,
             marginTop: 15,
-            textAlign: 'center',
+            maxWidth: 400,
+            textAlign: 'left',
             width: '100%',
           }}
         >
@@ -236,7 +253,7 @@ export default function DatasetsControl({
           setViewMode={setViewMode}
         />
       )}
-      {result && (
+      {(result || error.length > 0) && (
         <div
           style={{ display: 'flex', flexDirection: 'column', marginTop: 15 }}
         >
