@@ -14,6 +14,7 @@ dependencies:
   - amqp=5.2.0=pyhd8ed1ab_1
   - annotated-types=0.7.0=pyhd8ed1ab_0
   - anyio=4.4.0=pyhd8ed1ab_0
+  - aom=3.5.0=h27087fc_0
   - astor=0.8.1=pyh9f0ad1d_0
   - astunparse=1.6.3=pyhd8ed1ab_2
   - async-timeout=4.0.3=pyhd8ed1ab_0
@@ -27,11 +28,13 @@ dependencies:
   - boto3=1.35.72=pyhd8ed1ab_0
   - botocore=1.35.99=pyge38_1234567_0
   - branca=0.7.2=pyhd8ed1ab_0
-  - brotli=1.1.0=hd590300_1
-  - brotli-bin=1.1.0=hd590300_1
-  - brotli-python=1.1.0=py38h17151c0_1
+  - brotli=1.0.9=h166bdaf_9
+  - brotli-bin=1.0.9=h166bdaf_9
+  - brotli-python=1.0.9=py38hfa26641_9
+  - brunsli=0.1=h9c3ff4c_0
   - bzip2=1.0.8=h4bc722e_7
   - c-ares=1.34.4=hb9d3cd8_0
+  - c-blosc2=2.12.0=hb4ffafa_0
   - ca-certificates=2025.1.31=hbcca054_0
   - cached-property=1.5.2=hd8ed1ab_1
   - cached_property=1.5.2=pyha770c72_1
@@ -42,6 +45,7 @@ dependencies:
   - certifi=2024.8.30=pyhd8ed1ab_0
   - cffi=1.17.0=py38heb5c249_0
   - cfitsio=4.2.0=hd9d235c_0
+  - charls=2.4.2=h59595ed_0
   - charset-normalizer=3.4.0=pyhd8ed1ab_0
   - click=8.1.7=unix_pyh707e725_0
   - click-didyoumean=0.3.1=pyhd8ed1ab_0
@@ -53,6 +57,7 @@ dependencies:
   - cryptography=41.0.7=py38he241bfc_1
   - curl=8.1.2=h409715c_0
   - cycler=0.12.1=pyhd8ed1ab_0
+  - dav1d=1.2.1=hd590300_0
   - dnspython=2.6.1=pyhd8ed1ab_0
   - draco=1.5.7=h00ab1b0_0
   - eigen=3.4.0=h00ab1b0_0
@@ -106,6 +111,8 @@ dependencies:
   - hyperframe=6.0.1=pyhd8ed1ab_0
   - icu=70.1=h27087fc_0
   - idna=3.10=pyhd8ed1ab_0
+  - imagecodecs=2023.1.23=py38h3ca0a39_0
+  - imageio=2.36.0=pyh12aca89_1
   - importlib-metadata=8.5.0=pyha770c72_0
   - importlib-resources=6.4.5=pyhd8ed1ab_0
   - importlib_resources=6.4.5=pyhd8ed1ab_0
@@ -115,6 +122,7 @@ dependencies:
   - joblib=1.4.2=pyhd8ed1ab_0
   - jpeg=9e=h0b41bf4_3
   - json-c=0.16=hc379101_0
+  - jxrlib=1.1=hd590300_3
   - kealib=1.5.0=ha7026e8_0
   - keras=2.11.0=pyhd8ed1ab_0
   - keras-preprocessing=1.1.2=pyhd8ed1ab_0
@@ -122,6 +130,10 @@ dependencies:
   - kiwisolver=1.4.5=py38h7f3f72f_1
   - kombu=5.4.0=py38h578d9bd_0
   - krb5=1.20.1=h81ceb04_0
+  - laspy=2.3.0=pyha21a80b_0
+  - lazrs-python=0.4.4=py38h0287bc9_0
+  - lazy-loader=0.4=pyhd8ed1ab_1
+  - lazy_loader=0.4=pyhd8ed1ab_1
   - lcms2=2.15=hfd0df8a_0
   - ld_impl_linux-64=2.43=h712a8e2_2
   - lerc=4.0.0=h27087fc_0
@@ -129,10 +141,11 @@ dependencies:
   - libaec=1.1.3=h59595ed_0
   - libasprintf=0.22.5=he8f35ee_3
   - libasprintf-devel=0.22.5=he8f35ee_3
+  - libavif=0.11.1=h8182462_2
   - libblas=3.9.0=20_linux64_openblas
-  - libbrotlicommon=1.1.0=hd590300_1
-  - libbrotlidec=1.1.0=hd590300_1
-  - libbrotlienc=1.1.0=hd590300_1
+  - libbrotlicommon=1.0.9=h166bdaf_9
+  - libbrotlidec=1.0.9=h166bdaf_9
+  - libbrotlienc=1.0.9=h166bdaf_9
   - libcblas=3.9.0=20_linux64_openblas
   - libcurl=8.1.2=h409715c_0
   - libdeflate=1.17=h0b41bf4_0
@@ -180,6 +193,7 @@ dependencies:
   - libxml2=2.10.3=hca2bb57_4
   - libzip=1.10.1=h2629f0a_3
   - libzlib=1.2.13=h4ab18f5_6
+  - libzopfli=1.0.3=h9c3ff4c_0
   - lz4-c=1.9.4=hcb278e6_0
   - mapclassify=2.5.0=pyhd8ed1ab_1
   - markdown=3.6=pyhd8ed1ab_0
@@ -200,7 +214,7 @@ dependencies:
   - numpy=1.24.4=py38h59b608b_0
   - oauthlib=3.2.2=pyhd8ed1ab_0
   - openjpeg=2.5.0=hfec8fc6_2
-  - openssl=3.1.7=hb9d3cd8_0
+  - openssl=3.1.8=h7b32b05_0
   - opt_einsum=3.3.0=pyhc1e730c_2
   - packaging=24.2=pyhd8ed1ab_2
   - pandas=2.0.3=py38h01efb38_1
@@ -240,6 +254,7 @@ dependencies:
   - python_abi=3.8=5_cp38
   - pytz=2024.2=pyhd8ed1ab_0
   - pyu2f=0.1.5=pyhd8ed1ab_0
+  - pywavelets=1.4.1=py38h7f0c24c_1
   - pyyaml=6.0.2=py38h2019614_0
   - rasterio=1.3.6=py38hf839189_0
   - re2=2023.02.01=hcb278e6_0
@@ -251,6 +266,7 @@ dependencies:
   - rsa=4.9=pyhd8ed1ab_0
   - rtree=1.3.0=py38h00415a3_1
   - s3transfer=0.10.4=pyhd8ed1ab_0
+  - scikit-image=0.21.0=py38h17151c0_0
   - scikit-learn=1.3.2=py38ha25d942_2
   - scipy=1.10.1=py38h59b608b_3
   - setuptools=75.3.0=pyhd8ed1ab_0
@@ -272,6 +288,7 @@ dependencies:
   - tensorflow-estimator=2.11.0=cpu_py38h7af459a_0
   - termcolor=2.4.0=pyhd8ed1ab_0
   - threadpoolctl=3.5.0=pyhc1e730c_0
+  - tifffile=2023.7.10=pyhd8ed1ab_0
   - tiledb=2.13.2=hd532e3d_0
   - tk=8.6.13=noxft_h4845f30_101
   - tqdm=4.67.1=pyhd8ed1ab_0
@@ -313,14 +330,18 @@ dependencies:
   - xz-tools=5.6.3=hb9d3cd8_1
   - yaml=0.2.5=h7f98852_2
   - yarl=1.9.4=py38h01eb140_0
+  - zfp=1.0.1=h5888daf_2
   - zipp=3.21.0=pyhd8ed1ab_0
   - zlib=1.2.13=h4ab18f5_6
+  - zlib-ng=2.0.7=h0b41bf4_0
   - zstandard=0.23.0=py38h62bed22_0
   - zstd=1.5.6=ha6fb4c9_0
   - pip:
       - geojson-pydantic==1.1.2
       - jsonschema==4.23.0
       - jsonschema-specifications==2023.12.1
+      - laszip==0.2.3
+      - opencv-python-headless==4.11.0.86
       - pdal-plugins==1.2.0
       - pkgutil-resolve-name==1.3.10
       - pystac==1.8.4

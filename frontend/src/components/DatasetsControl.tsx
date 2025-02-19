@@ -24,8 +24,12 @@ type DatasetsControlProps = {
   setSelectedModel: React.Dispatch<React.SetStateAction<Model>>;
   setSelectedNaip: React.Dispatch<React.SetStateAction<Dataset | null>>;
   setResult: React.Dispatch<React.SetStateAction<Result | null>>;
-  viewMode: 'chm' | 'ndhm' | 'naip';
-  setViewMode: React.Dispatch<React.SetStateAction<'ndhm' | 'chm' | 'naip'>>;
+  viewMode: 'chm' | 'ndhm' | 'building2d' | 'building3d' | 'chmv2' | 'naip';
+  setViewMode: React.Dispatch<
+    React.SetStateAction<
+      'ndhm' | 'chm' | 'building2d' | 'building3d' | 'chmv2' | 'naip'
+    >
+  >;
 };
 
 export default function DatasetsControl({

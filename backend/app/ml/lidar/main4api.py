@@ -6,6 +6,11 @@ import geopandas as gpd
 import pdal
 from shapely.geometry import box
 
+from app.ml.building_raster import (
+    generate_raw_laz,
+    generate_dsm_dtm,
+    extract_building_maps,
+)
 from app.ml.lidar.model import (
     load_trained_pix2pix_model,
     generate_and_save_pix2pix_images,
@@ -15,6 +20,8 @@ from app.ml.lidar.my_functions import (
     save_patches,
     merge_patches,
     update_coordinate_system,
+    resample_to_reference,
+    remove_buildings_from_final2,
 )
 
 
@@ -202,7 +209,8 @@ def your_main_model_function(
     ept_url: str,
     ept_epsg: int,
     model_path: str,
-) -> Tuple[str, str]:
+) -> Tuple[str, str, str, str, str]:
+    # 1m resolution DTM/DSM, NDHM, CHM generation
     dtm, dsm = process_dtm_dsm(
         boundary_coordinates, session_dir, ept_id, ept_url, ept_epsg
     )
@@ -210,7 +218,75 @@ def your_main_model_function(
         dtm, dsm, session_dir, model_path
     )
 
+    # Bounding Box to Shapely Polygon
+    # bbox_geom = box(*[coord for pair in boundary_coordinates[0] for coord in pair])
+    bbox_geom = box(
+        boundary_coordinates[0],
+        boundary_coordinates[1],
+        boundary_coordinates[2],
+        boundary_coordinates[3],
+    )
+    poly = gpd.GeoDataFrame(geometry=[bbox_geom], crs="EPSG:4326")
+    poly = poly.to_crs(ept_epsg)
+    bbox_coords = poly.total_bounds.tolist()
+    print("Reprojected Bounding Box for Building Raster:", bbox_coords)
+
+    # raw laz generation using ept_url (no preprocessing)
+    raw_laz = generate_raw_laz(
+        ept_url, bbox_coords, target_epsg=ept_epsg, session_dir=session_dir
+    )
+
+    # 0.5m resolution DSM/DTM, 2d/3d building raster generation
+    out_dsm_br, out_dtm_br, crs_br, transform_br, DSM_br, dtm_br, DSM_LAST = (
+        generate_dsm_dtm(
+            raw_laz,
+            target_resolution=0.5,
+            target_epsg=ept_epsg,
+            session_dir=session_dir,
+        )
+    )
+    building_2d, building_3d = extract_building_maps(
+        DSM_br,
+        dtm_br,
+        DSM_LAST,
+        crs_br,
+        transform_br,
+        target_resolution=0.5,
+        session_dir=session_dir,
+        SAVE=True,
+    )
+
+    # resampling building_2d building_3d raster (to match final output resolution (1m))
+    resampled_building_2d = os.path.join(session_dir, "resampled_building_2d.tif")
+    resampled_building_3d = os.path.join(session_dir, "resampled_building_3d.tif")
+
+    resample_to_reference(
+        building_2d, final_output, resampled_building_2d, resample_method="nearest"
+    )
+    resample_to_reference(
+        building_3d, final_output, resampled_building_3d, resample_method="nearest"
+    )
+
+    # refined building removal: removing building from final_output using 3D building raster
+    final_output_nobuild = os.path.join(session_dir, "final_output_nobuild.tif")
+    remove_buildings_from_final2(
+        final_output,
+        resampled_building_2d,
+        resampled_building_3d,
+        final_output_nobuild,
+        tolerance=3.0,
+    )
+
     print(f"✅ NDHM: {ndhm_output}")
     print(f"✅ Final Leaf-on CHM: {final_output}")
+    print(f"✅ Resampled 2D Building Map: {resampled_building_2d}")
+    print(f"✅ Resampled 3D Building Map: {resampled_building_3d}")
+    print(f"✅ Final Output with Refined Building Removal: {final_output_nobuild}")
 
-    return ndhm_output, final_output
+    return (
+        ndhm_output,
+        final_output,
+        resampled_building_2d,
+        resampled_building_3d,
+        final_output_nobuild,
+    )

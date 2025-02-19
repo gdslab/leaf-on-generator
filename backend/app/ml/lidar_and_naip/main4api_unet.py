@@ -9,10 +9,17 @@ import rasterio.mask
 from rasterio.warp import calculate_default_transform, reproject, Resampling
 from shapely.geometry import box
 
+from app.ml.building_raster import (
+    generate_raw_laz,
+    generate_dsm_dtm,
+    extract_building_maps,
+)
 from app.ml.lidar_and_naip.my_functions import (
     generate_ndhm,
     save_combined_patches,
     merge_patches,
+    resample_to_reference,
+    remove_buildings_from_final2,
 )
 from app.ml.lidar_and_naip.model import (
     load_trained_model,
@@ -377,12 +384,12 @@ def your_main_model_function2(
     naip_url: str,
     naip_epsg: int,
     model_path: str,
-) -> Tuple[str, str, str]:
+) -> Tuple[str, str, str, str, str, str]:
     """
     API
 
     Parameters:
-        boundary_coordinates (list): AOI boundary coordinate
+        boundary_coordinates (list): AOI boundary coordinates
         session_dir (str): session directory
         ept_id (str): DSM dataset ID
         ept_url (str): DSM dataset URL
@@ -390,12 +397,15 @@ def your_main_model_function2(
         naip_id (str): NAIP dataset ID
         naip_url (str): NAIP dataset URL
         naip_epsg (str): NAIP EPSG code
-        model_path (str): trained U-Net model path (.h5)
+        model_path (str): trained U-Net model file path (.h5)
 
     Returns:
-        final_chm (str): final generated CHM file directory
-        output_ndhm (str): processed NDHM file directory
-        aligned_naip (str): aligned NAIP file directory
+        aligned_naip (str): aligned NAIP file path (DTM aligned)
+        output_ndhm (str): processed NDHM file path
+        final_chm (str): final merged generated CHM file path
+        resampled_building_2d (str): resampled 2D building map file path
+        resampled_building_3d (str): resampled 3D building map file path
+        final_output_nobuild (str): final CHM file with buildings removed
     """
     print("🔹 [STEP 1] DSM & DTM generation")
     dtm_tif, dsm_tif = process_dtm_dsm(
@@ -412,5 +422,78 @@ def your_main_model_function2(
         dtm_tif, dsm_tif, aligned_naip_tif, session_dir, model_path
     )
 
-    print(f"✅ Final CHM generate completed: {final_chm}")
-    return final_chm, output_ndhm, aligned_naip
+    # ====================
+    # 4. Building Raster processing
+    # ====================
+    print("🔹 [STEP 4] Building Raster processing")
+    # Calculate bounding box for building raster
+    bbox_geom = box(
+        boundary_coordinates[0],
+        boundary_coordinates[1],
+        boundary_coordinates[2],
+        boundary_coordinates[3],
+    )
+    poly = gpd.GeoDataFrame(geometry=[bbox_geom], crs="EPSG:4326")
+    poly = poly.to_crs(ept_epsg)
+    bbox_coords = poly.total_bounds.tolist()
+    print("Reprojected Bounding Box for Building Raster:", bbox_coords)
+
+    # Generate raw LAZ file using ept_url
+    raw_laz = generate_raw_laz(
+        ept_url, bbox_coords, target_epsg=ept_epsg, session_dir=session_dir
+    )
+
+    # Generate DSM/DTM and building maps (resolution 0.5m)
+    out_dsm_br, out_dtm_br, crs_br, transform_br, DSM_br, dtm_br, DSM_LAST = (
+        generate_dsm_dtm(
+            raw_laz,
+            target_resolution=0.5,
+            target_epsg=ept_epsg,
+            session_dir=session_dir,
+        )
+    )
+    building_2d, building_3d = extract_building_maps(
+        DSM_br,
+        dtm_br,
+        DSM_LAST,
+        crs_br,
+        transform_br,
+        target_resolution=0.5,
+        session_dir=session_dir,
+        SAVE=True,
+    )
+
+    # Resample building maps to match final CHM reference
+    resampled_building_2d = os.path.join(session_dir, "resampled_building_2d.tif")
+    resampled_building_3d = os.path.join(session_dir, "resampled_building_3d.tif")
+    resample_to_reference(
+        building_2d, final_chm, resampled_building_2d, resample_method="nearest"
+    )
+    resample_to_reference(
+        building_3d, final_chm, resampled_building_3d, resample_method="nearest"
+    )
+
+    # Remove buildings from final CHM using building maps
+    final_output_nobuild = os.path.join(session_dir, "final_output_nobuild.tif")
+    remove_buildings_from_final2(
+        final_chm,
+        resampled_building_2d,
+        resampled_building_3d,
+        final_output_nobuild,
+        tolerance=3.0,
+    )
+
+    print(f"✅ NDHM: {output_ndhm}")
+    print(f"✅ Final CHM: {final_chm}")
+    print(f"✅ Resampled 2D Building Map: {resampled_building_2d}")
+    print(f"✅ Resampled 3D Building Map: {resampled_building_3d}")
+    print(f"✅ Final Output with Building Removal: {final_output_nobuild}")
+
+    return (
+        final_chm,
+        output_ndhm,
+        resampled_building_2d,
+        resampled_building_3d,
+        final_output_nobuild,
+        aligned_naip_tif,
+    )

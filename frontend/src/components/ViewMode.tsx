@@ -8,8 +8,12 @@ export default function ViewMode({
   viewMode,
 }: {
   result: Result | null;
-  setViewMode: React.Dispatch<React.SetStateAction<'chm' | 'ndhm' | 'naip'>>;
-  viewMode: 'chm' | 'ndhm' | 'naip';
+  setViewMode: React.Dispatch<
+    React.SetStateAction<
+      'chm' | 'ndhm' | 'building2d' | 'building3d' | 'chmv2' | 'naip'
+    >
+  >;
+  viewMode: 'chm' | 'ndhm' | 'building2d' | 'building3d' | 'chmv2' | 'naip';
 }) {
   if (!result || !result?.chm || !result?.ndhm) return;
 
@@ -21,6 +25,7 @@ export default function ViewMode({
         <div
           style={{
             display: 'flex',
+            flexDirection: 'column',
             gap: '8px',
           }}
         >
@@ -44,7 +49,40 @@ export default function ViewMode({
               checked={viewMode === 'ndhm'}
               onChange={(e) => setViewMode(e.target.value as 'ndhm')}
             />
-            <label htmlFor="ndhm">Original CHM</label>
+            <label htmlFor="ndhm">NDHM</label>
+          </div>
+          <div>
+            <input
+              type="radio"
+              id="building2d"
+              name="viewMode"
+              value="building2d"
+              checked={viewMode === 'building2d'}
+              onChange={(e) => setViewMode(e.target.value as 'building2d')}
+            />
+            <label htmlFor="building2d">2D Building</label>
+          </div>
+          <div>
+            <input
+              type="radio"
+              id="building3d"
+              name="viewMode"
+              value="building3d"
+              checked={viewMode === 'building3d'}
+              onChange={(e) => setViewMode(e.target.value as 'building3d')}
+            />
+            <label htmlFor="building3d">3D Building</label>
+          </div>
+          <div>
+            <input
+              type="radio"
+              id="chmv2"
+              name="viewMode"
+              value="chmv2"
+              checked={viewMode === 'chmv2'}
+              onChange={(e) => setViewMode(e.target.value as 'chmv2')}
+            />
+            <label htmlFor="chmv2">Generated CHM v2</label>
           </div>
           {result?.naip && (
             <div>
@@ -82,12 +120,44 @@ export default function ViewMode({
           </a>
           <a
             href={result.ndhm.href}
-            download="original-chm.tif"
-            aria-label="Download Original CHM file"
+            download="ndhm.tif"
+            aria-label="Download NDHM file"
             type="image/tiff"
           >
-            {`Original CHM (GeoTIFF, ${(
-              result.ndhm.file_size /
+            {`NDHM (GeoTIFF, ${(result.ndhm.file_size / (1024 * 1024)).toFixed(
+              2
+            )} MB)`}
+          </a>
+          <a
+            href={result.building2d.href}
+            download="building2d.tif"
+            aria-label="Download 2D building file"
+            type="image/tiff"
+          >
+            {`2D Building (GeoTIFF, ${(
+              result.building2d.file_size /
+              (1024 * 1024)
+            ).toFixed(2)} MB)`}
+          </a>
+          <a
+            href={result.building3d.href}
+            download="ndhm.tif"
+            aria-label="Download 3D building file"
+            type="image/tiff"
+          >
+            {`3D Building (GeoTIFF, ${(
+              result.building3d.file_size /
+              (1024 * 1024)
+            ).toFixed(2)} MB)`}
+          </a>
+          <a
+            href={result.chmv2.href}
+            download="chmv2.tif"
+            aria-label="Download Generated CHM v2 file"
+            type="image/tiff"
+          >
+            {`Generated CHM v2 (GeoTIFF, ${(
+              result.chmv2.file_size /
               (1024 * 1024)
             ).toFixed(2)} MB)`}
           </a>

@@ -32,5 +32,8 @@ class ResultDataset(BaseModel):
 class ModelResponse(BaseModel):
     chm: ResultDataset
     ndhm: ResultDataset
+    building2d: ResultDataset
+    building3d: ResultDataset
+    chmv2: ResultDataset
     naip: Optional[ResultDataset] = None
     session_id: str

@@ -39,6 +39,21 @@ export type Result = {
     rescale: string;
     file_size: number;
   };
+  building2d: {
+    href: string;
+    rescale: string;
+    file_size: number;
+  };
+  building3d: {
+    href: string;
+    rescale: string;
+    file_size: number;
+  };
+  chmv2: {
+    href: string;
+    rescale: string;
+    file_size: number;
+  };
   naip?: {
     href: string;
     rescale: string;
@@ -63,7 +78,9 @@ export default function MyMap() {
   const [selected3dep, setSelected3dep] = useState<Dataset | null>(null);
   const [selectedModel, setSelectedModel] = useState<Model>('lidar');
   const [selectedNaip, setSelectedNaip] = useState<Dataset | null>(null);
-  const [viewMode, setViewMode] = useState<'chm' | 'ndhm' | 'naip'>('chm');
+  const [viewMode, setViewMode] = useState<
+    'chm' | 'ndhm' | 'building2d' | 'building3d' | 'chmv2' | 'naip'
+  >('chm');
   const [datasetsIntersection, setDatasetsIntersection] =
     useState<Feature | null>(null);
 
@@ -289,7 +306,7 @@ export default function MyMap() {
           />
         </Source>
       )}
-      {result && result?.[viewMode] && (
+      {aoi && result && result?.[viewMode] && (
         <Source
           key={viewMode}
           id={`${viewMode}-source`}
@@ -299,11 +316,12 @@ export default function MyMap() {
               result[viewMode].href
             }&${result[viewMode].rescale}${
               viewMode !== 'naip' ? '&colormap_name=jet' : ''
-            }`,
+            }&nodata=255`,
           ]}
           maxzoom={24}
           minzoom={0}
           tileSize={512}
+          bounds={turf.bbox(aoi) as [number, number, number, number]}
         >
           <Layer
             id={`${viewMode}-layer`}

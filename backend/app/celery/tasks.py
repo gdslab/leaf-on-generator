@@ -27,8 +27,10 @@ def run_lidar_only_model(
 
     try:
         # Run model
-        ndhm_path, chm_path = lidar_model(
-            bounding_box, session_dir, ept_id, ept_url, ept_epsg, model_path
+        ndhm_path, chm_path, building_2d_path, building_3d_path, final_output_path = (
+            lidar_model(
+                bounding_box, session_dir, ept_id, ept_url, ept_epsg, model_path
+            )
         )
     except Exception as e:
         print(str(e))
@@ -58,6 +60,21 @@ def run_lidar_only_model(
             "rescale": f"rescale={chm_min_value},{chm_max_value}",
             "file_size": get_file_size_in_bytes(ndhm_path),
         },
+        building2d={
+            "href": building_2d_path,
+            "rescale": "rescale=-0.01,1",
+            "file_size": get_file_size_in_bytes(building_2d_path),
+        },
+        building3d={
+            "href": building_3d_path,
+            "rescale": f"rescale={chm_min_value},{chm_max_value}",
+            "file_size": get_file_size_in_bytes(building_3d_path),
+        },
+        chmv2={
+            "href": final_output_path,
+            "rescale": f"rescale={chm_min_value},{chm_max_value}",
+            "file_size": get_file_size_in_bytes(final_output_path),
+        },
         naip=None,
         session_id=session_id,
     ).model_dump_json()
@@ -84,7 +101,14 @@ def run_lidar_and_naip_model(
 
     try:
         # Run model
-        chm_path, ndhm_path, naip_path = lidar_and_naip_model(
+        (
+            chm_path,
+            ndhm_path,
+            building_2d_path,
+            building_3d_path,
+            final_output_path,
+            naip_path,
+        ) = lidar_and_naip_model(
             bounding_box,
             session_dir,
             ept_id,
@@ -132,6 +156,21 @@ def run_lidar_and_naip_model(
             "href": ndhm_path,
             "rescale": f"rescale={chm_min_value},{chm_max_value}",
             "file_size": get_file_size_in_bytes(ndhm_path),
+        },
+        building2d={
+            "href": building_2d_path,
+            "rescale": "rescale=-0.01,1",
+            "file_size": get_file_size_in_bytes(building_2d_path),
+        },
+        building3d={
+            "href": building_3d_path,
+            "rescale": f"rescale={chm_min_value},{chm_max_value}",
+            "file_size": get_file_size_in_bytes(building_3d_path),
+        },
+        chmv2={
+            "href": final_output_path,
+            "rescale": f"rescale={chm_min_value},{chm_max_value}",
+            "file_size": get_file_size_in_bytes(final_output_path),
         },
         naip={
             "href": naip_path,
