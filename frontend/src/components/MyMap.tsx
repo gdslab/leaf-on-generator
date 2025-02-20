@@ -312,11 +312,9 @@ export default function MyMap() {
           id={`${viewMode}-source`}
           type="raster"
           tiles={[
-            `/cog/tiles/WebMercatorQuad/{z}/{x}/{y}@2x?url=${
-              result[viewMode].href
-            }&${result[viewMode].rescale}${
-              viewMode !== 'naip' ? '&colormap_name=jet' : ''
-            }&nodata=255`,
+            '/cog/tiles/WebMercatorQuad/{z}/{x}/{y}@2x?url=' +
+              `${result[viewMode].href}&${result[viewMode].rescale}` +
+              `${viewMode !== 'naip' ? '&colormap_name=jet&nodata=255' : ''}`,
           ]}
           maxzoom={24}
           minzoom={0}

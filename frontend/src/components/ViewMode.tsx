@@ -141,7 +141,7 @@ export default function ViewMode({
           </a>
           <a
             href={result.building3d.href}
-            download="ndhm.tif"
+            download="building3d.tif"
             aria-label="Download 3D building file"
             type="image/tiff"
           >

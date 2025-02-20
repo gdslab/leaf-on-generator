@@ -62,7 +62,7 @@ def run_lidar_only_model(
         },
         building2d={
             "href": building_2d_path,
-            "rescale": "rescale=-0.01,1",
+            "rescale": "rescale=0,1",
             "file_size": get_file_size_in_bytes(building_2d_path),
         },
         building3d={
@@ -159,7 +159,7 @@ def run_lidar_and_naip_model(
         },
         building2d={
             "href": building_2d_path,
-            "rescale": "rescale=-0.01,1",
+            "rescale": "rescale=0,1",
             "file_size": get_file_size_in_bytes(building_2d_path),
         },
         building3d={
