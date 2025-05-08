@@ -1,7 +1,13 @@
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { Feature } from 'geojson';
 import { useEffect, useRef, useState } from 'react';
-import Map, { Layer, MapRef, Source } from 'react-map-gl/maplibre';
+import Map, {
+  Layer,
+  MapRef,
+  NavigationControl,
+  ScaleControl,
+  Source,
+} from 'react-map-gl/maplibre';
 import * as turf from '@turf/turf';
 
 import DatasetsControl from './DatasetsControl';
@@ -334,6 +340,8 @@ export default function MyMap() {
         setAoi={setAoi}
         setDatasets={setDatasets}
       />
+      <ScaleControl />
+      <NavigationControl />
     </Map>
   );
 }
