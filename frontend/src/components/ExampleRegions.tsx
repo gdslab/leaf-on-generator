@@ -4,7 +4,7 @@ export type Region = 'kansas' | 'manhattan' | 'purdue';
 
 export const regionCoordinates: Record<Region, [number, number]> = {
   kansas: [-95.2353, 38.9717], // Lawrence, Kansas coordinates
-  manhattan: [-73.935242, 40.73061],
+  manhattan: [-96.5717, 39.1836], // Manhattan, Kansas coordinates
   purdue: [-86.921195, 40.423705],
 };
 
@@ -68,7 +68,7 @@ const ExampleRegions: FC<ExampleRegionsProps> = ({ onRegionSelect }) => {
             onChange={(e) => onRegionSelect(e.target.value as Region)}
             style={{ cursor: 'pointer' }}
           />
-          Lawrence
+          Kansas
         </label>
         <label
           style={{
