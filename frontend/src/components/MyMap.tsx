@@ -12,6 +12,7 @@ import * as turf from '@turf/turf';
 
 import DatasetsControl from './DatasetsControl';
 import DrawToolbar from './DrawToolbar';
+import ExampleRegions, { Region, regionCoordinates } from './ExampleRegions';
 
 import { mapboxSatelliteBasemapStyle } from './basemapStyles';
 import { getBboxGeojson } from './utils';
@@ -89,8 +90,23 @@ export default function MyMap() {
   >('chm');
   const [datasetsIntersection, setDatasetsIntersection] =
     useState<Feature | null>(null);
+  const [selectedRegion, setSelectedRegion] = useState<Region>('kansas');
 
   const mapRef = useRef<MapRef | null>(null);
+
+  // Handle region selection
+  const handleRegionSelect = (region: Region) => {
+    setSelectedRegion(region);
+    if (mapRef.current) {
+      const map = mapRef.current.getMap();
+      const [longitude, latitude] = regionCoordinates[region];
+      map.flyTo({
+        center: [longitude, latitude],
+        zoom: 14,
+        duration: 1000,
+      });
+    }
+  };
 
   // Zoom to drawn area of interest (AOI) on its creation
   useEffect(() => {
@@ -126,14 +142,14 @@ export default function MyMap() {
   useEffect(() => {
     if (mapRef.current && !result) {
       const map = mapRef.current.getMap();
-
-      map.fitBounds([-86.921195, 40.423705, -86.921195, 40.423705], {
-        padding: 20,
-        duration: 1000,
+      const [longitude, latitude] = regionCoordinates[selectedRegion];
+      map.flyTo({
+        center: [longitude, latitude],
         zoom: 14,
+        duration: 1000,
       });
     }
-  }, [result]);
+  }, [result, selectedRegion]);
 
   // Zoom to the intersection of selected datasets
   useEffect(() => {
@@ -202,13 +218,14 @@ export default function MyMap() {
     <Map
       ref={mapRef}
       initialViewState={{
-        longitude: -86.921195,
-        latitude: 40.423705,
+        longitude: regionCoordinates[selectedRegion][0],
+        latitude: regionCoordinates[selectedRegion][1],
         zoom: 14,
       }}
       style={{ width: '100%', height: '100%' }}
       mapStyle={mapboxSatelliteBasemapStyle}
     >
+      <ExampleRegions onRegionSelect={handleRegionSelect} />
       {aoi && datasets && (
         <DatasetsControl
           aoi={aoi}
