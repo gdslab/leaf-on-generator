@@ -1,11 +1,11 @@
 import { FC } from 'react';
 
-export type Region = 'kansas' | 'manhattan' | 'purdue';
+export type Region = 'demopolis' | 'manhattan' | 'purdue';
 
 export const regionCoordinates: Record<Region, [number, number]> = {
-  kansas: [-95.2353, 38.9717], // Lawrence, Kansas coordinates
-  manhattan: [-96.5717, 39.1836], // Manhattan, Kansas coordinates
-  purdue: [-86.921195, 40.423705],
+  demopolis: [-87.8375, 32.5176], // Demopolis, AL coordinates
+  manhattan: [-96.5717, 39.1836], // Manhattan, KS coordinates
+  purdue: [-78.1944, 38.9182], // Front Royal, VA coordinates
 };
 
 interface ExampleRegionsProps {
@@ -21,13 +21,14 @@ const ExampleRegions: FC<ExampleRegionsProps> = ({ onRegionSelect }) => {
         left: '50%',
         transform: 'translateX(-50%)',
         backgroundColor: 'rgba(255, 255, 255, 0.95)',
-        padding: '12px 24px',
+        padding: '12px 16px',
         borderRadius: '6px',
         boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
         zIndex: 1,
         color: 'black',
         fontFamily: 'Arial, sans-serif',
-        maxWidth: '400px',
+        width: '360px',
+        maxWidth: '360px',
       }}
     >
       <div
@@ -45,10 +46,11 @@ const ExampleRegions: FC<ExampleRegionsProps> = ({ onRegionSelect }) => {
       <div
         style={{
           display: 'flex',
-          gap: '20px',
+          justifyContent: 'space-between',
           color: 'black',
-          fontSize: '14px',
+          fontSize: '13px',
           marginBottom: '12px',
+          gap: '8px',
         }}
       >
         <label
@@ -56,27 +58,29 @@ const ExampleRegions: FC<ExampleRegionsProps> = ({ onRegionSelect }) => {
             color: 'black',
             display: 'flex',
             alignItems: 'center',
-            gap: '6px',
+            gap: '4px',
             cursor: 'pointer',
+            whiteSpace: 'nowrap',
           }}
         >
           <input
             type="radio"
             name="region"
-            value="kansas"
+            value="demopolis"
             defaultChecked
             onChange={(e) => onRegionSelect(e.target.value as Region)}
             style={{ cursor: 'pointer' }}
           />
-          Kansas
+          Demopolis, AL
         </label>
         <label
           style={{
             color: 'black',
             display: 'flex',
             alignItems: 'center',
-            gap: '6px',
+            gap: '4px',
             cursor: 'pointer',
+            whiteSpace: 'nowrap',
           }}
         >
           <input
@@ -86,15 +90,16 @@ const ExampleRegions: FC<ExampleRegionsProps> = ({ onRegionSelect }) => {
             onChange={(e) => onRegionSelect(e.target.value as Region)}
             style={{ cursor: 'pointer' }}
           />
-          Manhattan
+          Manhattan, KS
         </label>
         <label
           style={{
             color: 'black',
             display: 'flex',
             alignItems: 'center',
-            gap: '6px',
+            gap: '4px',
             cursor: 'pointer',
+            whiteSpace: 'nowrap',
           }}
         >
           <input
@@ -104,7 +109,7 @@ const ExampleRegions: FC<ExampleRegionsProps> = ({ onRegionSelect }) => {
             onChange={(e) => onRegionSelect(e.target.value as Region)}
             style={{ cursor: 'pointer' }}
           />
-          Purdue
+          Front Royal, VA
         </label>
       </div>
       <div

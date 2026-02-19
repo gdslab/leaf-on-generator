@@ -90,7 +90,7 @@ export default function MyMap() {
   >('chm');
   const [datasetsIntersection, setDatasetsIntersection] =
     useState<Feature | null>(null);
-  const [selectedRegion, setSelectedRegion] = useState<Region>('kansas');
+  const [selectedRegion, setSelectedRegion] = useState<Region>('demopolis');
 
   const mapRef = useRef<MapRef | null>(null);
 
@@ -157,7 +157,7 @@ export default function MyMap() {
       const polygon1 = turf.bboxPolygon(selected3dep.bbox);
       const polygon2 = turf.bboxPolygon(turf.bbox(aoi));
       const intersection = turf.intersect(
-        turf.featureCollection([polygon1, polygon2])
+        turf.featureCollection([polygon1, polygon2]),
       );
       setDatasetsIntersection(intersection);
       if (mapRef.current) {
@@ -177,7 +177,7 @@ export default function MyMap() {
       const polygon2 = turf.bboxPolygon(selectedNaip.bbox);
       const polygon3 = turf.bboxPolygon(turf.bbox(aoi));
       const intersection = turf.intersect(
-        turf.featureCollection([polygon1, polygon2, polygon3])
+        turf.featureCollection([polygon1, polygon2, polygon3]),
       );
       setDatasetsIntersection(intersection);
       if (mapRef.current) {
@@ -196,7 +196,7 @@ export default function MyMap() {
       const polygon1 = turf.bboxPolygon(selectedNaip.bbox);
       const polygon2 = turf.bboxPolygon(turf.bbox(aoi));
       const intersection = turf.intersect(
-        turf.featureCollection([polygon1, polygon2])
+        turf.featureCollection([polygon1, polygon2]),
       );
       setDatasetsIntersection(intersection);
       if (mapRef.current) {
