@@ -66,7 +66,7 @@ def process_dtm_dsm(
     # ====================
     # DTM generation
     # ====================
-    out_dtm_laz = os.path.join(session_dir, "clip_dtm.laz")
+    # out_dtm_laz = os.path.join(session_dir, "clip_dtm.laz")
     out_dtm_tif = os.path.join(session_dir, "clip_dtm.tif")
 
     dtm_pipeline = {
@@ -77,37 +77,37 @@ def process_dtm_dsm(
                 "type": "readers.ept",
                 "tag": "readdata",
             },
-            {
-                "limits": "Classification![7:7]",
-                "type": "filters.range",
-                "tag": "nonoise",
-            },
-            {
-                "assignment": "Classification[:]=0",
-                "type": "filters.assign",
-                "tag": "wipeclasses",
-            },
+            # {
+            #     "limits": "Classification![7:7]",
+            #     "type": "filters.range",
+            #     "tag": "nonoise",
+            # },
+            # {
+            #     "assignment": "Classification[:]=0",
+            #     "type": "filters.assign",
+            #     "tag": "wipeclasses",
+            # },
             {
                 "out_srs": f"EPSG:{ept_epsg}",
                 "type": "filters.reprojection",
                 "tag": "reprojectUTM",
             },
-            {"type": "filters.smrf", "tag": "groundify"},
+            # {"type": "filters.smrf", "tag": "groundify"},
             {
                 "limits": "Classification[2:2]",
                 "type": "filters.range",
                 "tag": "classify",
             },
-            {
-                "filename": out_dtm_laz,
-                "inputs": ["classify"],
-                "type": "writers.las",
-                "tag": "writerslas",
-            },
+            # {
+            #     "filename": out_dtm_laz,
+            #     "inputs": ["classify"],
+            #     "type": "writers.las",
+            #     "tag": "writerslas",
+            # },
             {
                 "filename": out_dtm_tif,
                 "gdalopts": "tiled=yes,compress=deflate",
-                "inputs": ["writerslas"],
+                "inputs": ["classify"],
                 "nodata": -9999,
                 "output_type": "idw",
                 "resolution": 1,
