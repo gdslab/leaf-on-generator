@@ -77,7 +77,7 @@ def find_datasets_in_aoi(aoi: Feature[Polygon, Dict]) -> Any:
             {
                 "id": item.id,
                 "bbox": item.bbox,
-                "epsg": item.properties.get("proj:epsg") or -1,
+                "epsg": int(item.properties.get("proj:code", "EPSG:-1").split(":")[-1]),
                 "href": item.assets["ept.json"].href,
             }
             for item in search_3dep.items()
@@ -86,7 +86,7 @@ def find_datasets_in_aoi(aoi: Feature[Polygon, Dict]) -> Any:
             {
                 "id": item.id,
                 "bbox": item.bbox,
-                "epsg": item.properties.get("proj:epsg") or -1,
+                "epsg": item.properties.get("proj:epsg", -1),
                 "gsd": item.properties.get("gsd") or -1,
                 "href": item.assets["image"].href,
             }
